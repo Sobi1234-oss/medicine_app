@@ -1,0 +1,2310 @@
+diff --git a/node_modules/react-native-document-picker/README.md b/node_modules/react-native-document-picker/README.md
+index 10c9e74..3f545b7 100644
+--- a/node_modules/react-native-document-picker/README.md
++++ b/node_modules/react-native-document-picker/README.md
+@@ -1,257 +1,11 @@
+ # react-native-document-picker
+ 
+-🚧🚧 GH discussions available 🚧🚧
+-
+-If you want to ask questions, we opened [GH discussions](https://github.com/rnmods/react-native-document-picker/discussions) for that purpose! 🤗 Issue tracker is now reserved for bugs and feature requests only and issues not following the issue template can be closed. Thank you!
+-
+-A React Native wrapper for:
+-
+-- Apple's `UIDocumentPickerViewController`
+-- Android's `Intent.ACTION_GET_CONTENT`
+-- Windows `Windows.Storage.Pickers`
+-
+-<table>
+-  <tr><td><strong>iOS</strong></td><td><strong>Android</strong></td></tr>
+-  <tr>
+-    <td><p align="center"><img src="/docs/ios_screenshot.jpeg" height="500"></p></td>
+-    <td><p align="center"><img src="/docs/android_screenshot.jpg" height="500"></p></td>
+-  </tr>
+-</table>
+-
+-Requires RN >= 0.63, Android 5.0+ and iOS 11+
+-
+-# Table of Contents
+-
+-- [react-native-document-picker](#react-native-document-picker)
+-  - [Installation](#installation)
+-  - [RN &gt;= 0.63](#rn--063)
+-  - [API](#api)
+-    - [DocumentPicker.pickMultiple(options) / DocumentPicker.pickSingle(options) / DocumentPicker.pick(options)](#documentpickerpickmultipleoptions--documentpickerpicksingleoptions--documentpickerpickoptions)
+-    - [[Android and Windows only] DocumentPicker.pickDirectory()](#android-and-windows-only-documentpickerpickdirectory)
+-    - [DocumentPicker.pick(options) and DocumentPicker.pickMultiple(options)](#documentpickerpickoptions-and-documentpickerpickmultipleoptions)
+-    - [Options](#options)
+-      - [allowMultiSelection:boolean](#allowmultiselectionboolean)
+-      - [type:string|Array&lt;string&gt;](#typestringarraystring)
+-      - [[iOS only] presentationStyle:'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen'](#ios-only-presentationstylefullscreen--pagesheet--formsheet--overfullscreen)
+-      - [[iOS only] mode:"import" | "open"](#ios-only-modeimport--open)
+-      - [[iOS and Android only] copyTo:"cachesDirectory" | "documentDirectory"](#ios-and-android-only-copytocachesdirectory--documentdirectory)
+-      - [[Windows only] readContent:boolean](#windows-only-readcontentboolean)
+-    - [Result](#result)
+-      - [uri](#uri)
+-      - [fileCopyUri](#filecopyuri)
+-      - [type](#type)
+-      - [name](#name)
+-      - [size](#size)
+-      - [[Windows only] content](#windows-only-content)
+-    - [DocumentPicker.types.\*](#documentpickertypes)
+-      - [DocumentPicker.isCancel(err)](#documentpickeriscancelerr)
+-      - [DocumentPicker.isInProgress(err)](#documentpickerisinprogresserr)
+-      - [[iOS only] DocumentPicker.releaseSecureAccess(uris: Array&lt;string&gt;)](#ios-only-documentpickerreleasesecureaccessuris-arraystring)
+-  - [Example](#example)
+-  - [How to upload picked files?](#how-to-upload-picked-files)
+-  - [Help wanted: Improvements](#help-wanted-improvements)
+-
+-### Installation
+-
+-```bash
+-npm i --save react-native-document-picker
+-
+-OR
+-
+-yarn add react-native-document-picker
+-```
+-
+-#### RN >= 0.63
+-
+-If you are using RN >= 0.63, only run `pod install` from the ios directory. Then rebuild your project. Older RN versions are not supported.
+-
+-## API
+-
+-#### `DocumentPicker.pickMultiple(options)` / `DocumentPicker.pickSingle(options)` / `DocumentPicker.pick(options)`
+-
+-⚠️ Breaking in v6: `pick` returns a `Promise<Array<DocumentPickerResponse>>` instead of `Promise<DocumentPickerResponse>`. If you were using `pick`, change those usages to `pickSingle`.
+-
+-Use `pickMultiple`, `pickSingle` or `pick` to open a document picker for the user to select file(s). All methods return a Promise.
+-
+-#### [Android and Windows only] `DocumentPicker.pickDirectory()`
+-
+-Open a system directory picker. Returns a promise that resolves to (`{ uri: string }`) of the directory selected by user.
+-
+-#### `DocumentPicker.pick(options)` and `DocumentPicker.pickMultiple(options)`
+-
+-- `pick` is the most universal, you can use `allowMultiSelection` param to control whether or not user can select multiple files (`false` by default). Returns a `Promise<Array<DocumentPickerResponse>>`
+-
+-`pickSingle` and `pickMultiple` are "sugar functions" on top of `pick`, and they _might be removed_ in a future release for increased API clarity.
+-
+-- `pickSingle` only allows a single selection and the Promise will resolve to that single result (same behavior as `pick` in v5)
+-- `pickMultiple` allows multiple selection and the Promise will resolve to an array of results.
+-
+-### Options
+-
+-All of the options are optional
+-
+-##### `allowMultiSelection`:`boolean`
+-
+-Whether or not selecting multiple files is allowed. For `pick`, this is `false` by default. `allowMultiSelection` is `false` for `pickSingle` and `true` for `pickMultiple` and cannot be overridden for those calls.
+-
+-##### `type`:`string|Array<string>`
+-
+-The type or types of documents to allow selection of. May be an array of types as single type string.
+-
+-- On Android these are MIME types such as `text/plain` or partial MIME types such as `image/*`. See [common MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types).
+-- On iOS these must be Apple "[Uniform Type Identifiers](https://developer.apple.com/library/content/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html)"
+-- If `type` is omitted it will be treated as `*/*` or `public.item`.
+-
+-##### [iOS only] `presentationStyle`:`'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen'`
+-
+-Controls how the picker is presented, eg. on an iPad you may want to present it fullscreen. Defaults to `pageSheet`.
+-
+-##### [iOS only] `mode`:`"import" | "open"`
+-
+-Defaults to `import`. If `mode` is set to `import` the document picker imports the file from outside to inside the sandbox, otherwise if `mode` is set to `open` the document picker opens the file right in place.
+-
+-##### [iOS and Android only] `copyTo`:`"cachesDirectory" | "documentDirectory"`
+-
+-If specified, the picked file is copied to `NSCachesDirectory` / `NSDocumentDirectory` (iOS) or `getCacheDir` / `getFilesDir` (Android). The uri of the copy will be available in result's `fileCopyUri`. If copying the file fails (eg. due to lack of free space), `fileCopyUri` will be `null`, and more details about the error will be available in `copyError` field in the result.
+-
+-This should help if you need to work with the file(s) later on, because by default, [the picked documents are temporary files. They remain available only until your application terminates](https://developer.apple.com/documentation/uikit/uidocumentpickerdelegate/2902364-documentpicker). This may impact performance for large files, so keep this in mind if you expect users to pick particularly large files and your app does not need immediate read access.
+-
+-On Android, this can be used to obtain local, on-device copy of the file (eg. if user picks a document from google drive, this will download it locally to the phone).
++📣📣 A full rewrite of the library is [AVAILABLE](https://github.com/react-native-documents/document-picker/issues/603). 📣📣
+ 
+-##### [Windows only] `readContent`:`boolean`
++See the new [docs here](https://react-native-documents.github.io/).
+ 
+-Defaults to `false`. If `readContent` is set to true the content of the picked file/files will be read and supplied in the result object.
++---
+ 
+-- Be aware that this can introduce a huge performance hit in case of big files. (The files are read completely and into the memory and encoded to base64 afterwards to add them to the result object)
+-- However reading the file directly from within the Thread which managed the picker can be necessary on Windows: Windows Apps can only read the Downloads folder and their own app folder by default and If a file is outside of these locations it cannot be acessed directly. However if the user picks the file through a file picker permissions to that file are granted implicitly.
+-
+-  ```
+-  In addition to the default locations, an app can access additional files and folders by declaring capabilities in the app manifest (see App capability declarations), or by calling a file picker to let the user pick files and folders for the app to access (see Open files and folders with a picker).
+-  ```
+-
+-  https://docs.microsoft.com/en-us/windows/uwp/files/file-access-permissions
+-
+-  Unfortunately that permission is not granted to the whole app, but only the Thread which handled the filepicker. Therefore it can be useful to read the file directly.
+-
+-- You can use `react-native-fs` on Android and IOS to read the picked file.
+-
+-### Result
+-
+-The `pick` Promise resolves to an array of objects with the following keys.
+-
+-##### `uri`
+-
+-The URI representing the document picked by the user. _On iOS this will be a `file://` URI for a temporary file in your app's container if `mode` is not specified or set at `import` otherwise it will be the original `file://` URI. On Android this will be a `content://` URI for a document provided by a DocumentProvider that must be accessed with a ContentResolver._
+-
+-##### `fileCopyUri`
+-
+-If `copyTo` option is specified, this will point to a local copy of picked file. Otherwise, this is `null`.
+-
+-##### `type`
+-
+-The MIME type of the file. _On Android some DocumentProviders may not provide MIME types for their documents. On iOS this MIME type is based on the best MIME type for the file extension according to Apple's internal "Uniform Type Identifiers" database._
+-
+-##### `name`
+-
+-The display name of the file. _This is normally the filename of the file, but Android does not guarantee that this will be a filename from all DocumentProviders._
+-
+-##### `size`
+-
+-The file size of the document. _On Android some DocumentProviders may not provide this information for a document._
+-
+-##### [Windows only] `content`
+-
+-The base64 encoded content of the picked file if the option `readContent` was set to `true`.
+-
+-### `DocumentPicker.types.*`
+-
+-`DocumentPicker.types.*` provides a few common types for use as `type` values, these types will use the correct format for each platform (MIME types on Android, UTIs on iOS).
+-
+-- `DocumentPicker.types.allFiles`: All document types, on Android this is `*/*`, on iOS is `public.item`
+-- `DocumentPicker.types.images`: All image types
+-- `DocumentPicker.types.plainText`: Plain text files
+-- `DocumentPicker.types.audio`: All audio types
+-- `DocumentPicker.types.pdf`: PDF documents
+-- `DocumentPicker.types.zip`: Zip files
+-- `DocumentPicker.types.csv`: Csv files
+-- `DocumentPicker.types.doc`: doc files
+-- `DocumentPicker.types.docx`: docx files
+-- `DocumentPicker.types.ppt`: ppt files
+-- `DocumentPicker.types.pptx`: pptx files
+-- `DocumentPicker.types.xls`: xls files
+-- `DocumentPicker.types.xlsx`: xlsx files
+-
+-#### `DocumentPicker.isCancel(err)`
+-
+-If the user cancels the document picker without choosing a file (by pressing the system back button on Android or the Cancel button on iOS) the Promise will be rejected with a cancellation error. You can check for this error using `DocumentPicker.isCancel(err)` allowing you to ignore it and cleanup any parts of your interface that may not be needed anymore.
+-
+-#### `DocumentPicker.isInProgress(err)`
+-
+-If the user somehow manages to open multiple file pickers (eg. due the app being unresponsive), then only the picked result from the last opened picker will be considered and the promises form previous opened pickers will be rejected with an error that you can check using `DocumentPicker.isInProgress()`.
+-
+-This behavior might change in future to allow opening only a single picker at a time. The internal logic is currently implemented only on iOS.
+-
+-#### [iOS only] `DocumentPicker.releaseSecureAccess(uris: Array<string>)`
+-
+-If `mode` is set to `open` iOS is giving you a secure access to a file located outside from your sandbox.
+-In that case Apple is asking you to release the access as soon as you finish using the resource.
+-
+-## Example
+-
+-See the example app in `example` folder.
+-
+-```javascript
+-import DocumentPicker from 'react-native-document-picker'
+-
+-// Pick a single file
+-try {
+-  const res = await DocumentPicker.pick({
+-    type: [DocumentPicker.types.images],
+-  })
+-  console.log(
+-    res.uri,
+-    res.type, // mime type
+-    res.name,
+-    res.size,
+-  )
+-} catch (err) {
+-  if (DocumentPicker.isCancel(err)) {
+-    // User cancelled the picker, exit any dialogs or menus and move on
+-  } else {
+-    throw err
+-  }
+-}
+-
+-// Pick multiple files
+-try {
+-  const results = await DocumentPicker.pickMultiple({
+-    type: [DocumentPicker.types.images],
+-  })
+-  for (const res of results) {
+-    console.log(
+-      res.uri,
+-      res.type, // mime type
+-      res.name,
+-      res.size,
+-    )
+-  }
+-} catch (err) {
+-  if (DocumentPicker.isCancel(err)) {
+-    // User cancelled the picker, exit any dialogs or menus and move on
+-  } else {
+-    throw err
+-  }
+-}
+-```
+-
+-## How to upload picked files?
+-
+-Use blob support that is built into react native - [see comment](https://github.com/rnmods/react-native-document-picker/issues/70#issuecomment-384335402).
+-If you need to track upload progress, use `XMLHttpRequest` [see here](https://gist.github.com/Tamal/9231005f0c62e1a3f23f60dc2f46ae35)
+-
+-Alternatively, use [https://github.com/johanneslumpe/react-native-fs](https://github.com/johanneslumpe/react-native-fs)
+-
+-## Help wanted: Improvements
++🚧🚧 GH discussions available 🚧🚧
+ 
+-- Fix Xcode warning about constraints
+-- support options for the [UIDocumentPickerViewController](https://developer.apple.com/library/ios/documentation/FileManagement/Conceptual/DocumentPickerProgrammingGuide/AccessingDocuments/AccessingDocuments.html#//apple_ref/doc/uid/TP40014451-CH2-SW5)
++If you want to ask questions, we opened [GH discussions](https://github.com/rnmods/react-native-document-picker/discussions) for that purpose! 🤗 Issue tracker is reserved for bugs and feature requests only and issues not following the issue template can be closed. Thank you!
+diff --git a/node_modules/react-native-document-picker/android/.classpath b/node_modules/react-native-document-picker/android/.classpath
+new file mode 100644
+index 0000000..bbe97e5
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/.classpath
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17/"/>
++	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
++	<classpathentry kind="output" path="bin/default"/>
++</classpath>
+diff --git a/node_modules/react-native-document-picker/android/.project b/node_modules/react-native-document-picker/android/.project
+new file mode 100644
+index 0000000..16d22fd
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/.project
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>react-native-document-picker</name>
++	<comment>Project react-native-document-picker created by Buildship.</comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
++	</natures>
++</projectDescription>
+diff --git a/node_modules/react-native-document-picker/android/.settings/org.eclipse.buildship.core.prefs b/node_modules/react-native-document-picker/android/.settings/org.eclipse.buildship.core.prefs
+new file mode 100644
+index 0000000..1675490
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/.settings/org.eclipse.buildship.core.prefs
+@@ -0,0 +1,2 @@
++connection.project.dir=../../../android
++eclipse.preferences.version=1
+diff --git a/node_modules/react-native-document-picker/android/build.gradle b/node_modules/react-native-document-picker/android/build.gradle
+index 0d09fbf..fd24a6e 100644
+--- a/node_modules/react-native-document-picker/android/build.gradle
++++ b/node_modules/react-native-document-picker/android/build.gradle
+@@ -1,58 +1,66 @@
+ buildscript {
+-    if (project == rootProject) {
+-        repositories {
+-            google()
+-            jcenter()
+-        }
+-
+-        dependencies {
+-            classpath 'com.android.tools.build:gradle:3.5.3'
+-        }
++    repositories {
++        google()
++        mavenCentral()
+     }
+ }
+ 
+-apply plugin: 'com.android.library'
++def getExtOrIntegerDefault(name) {
++    return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['ReactNativeDocumentPicker_' + name]).toInteger()
++}
+ 
+-def safeExtGet(prop, fallback) {
+-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
++def isNewArchitectureEnabled() {
++    // To opt-in for the New Architecture, you can either:
++    // - Set `newArchEnabled` to true inside the `gradle.properties` file
++    // - Invoke gradle with `-newArchEnabled=true`
++    // - Set an environment variable `ORG_GRADLE_PROJECT_newArchEnabled=true`
++    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
++}
++
++apply plugin: 'com.android.library'
++if (isNewArchitectureEnabled()) {
++    apply plugin: "com.facebook.react"
+ }
+ 
+-android {
+-    compileSdkVersion safeExtGet('DocumentPicker_compileSdkVersion', 29)
+-    buildToolsVersion safeExtGet('DocumentPicker_buildToolsVersion', '29.0.2')
+-    defaultConfig {
+-        minSdkVersion safeExtGet('DocumentPicker_minSdkVersion', 21)
+-        targetSdkVersion safeExtGet('DocumentPicker_targetSdkVersion', 29)
+-        versionCode 1
+-        versionName "1.0"
+ 
++android {
++    def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
++    if (agpVersion.tokenize('.')[0].toInteger() >= 7) {
++      namespace "com.reactnativedocumentpicker"
+     }
++    compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
+ 
+-    buildTypes {
+-        release {
+-            minifyEnabled false
+-        }
++    // Used to override the NDK path/version on internal CI or by allowing
++    // users to customize the NDK path/version from their root project (e.g. for M1 support)
++    if (rootProject.hasProperty("ndkPath")) {
++        ndkPath rootProject.ext.ndkPath
++    }
++    if (rootProject.hasProperty("ndkVersion")) {
++        ndkVersion rootProject.ext.ndkVersion
+     }
+-    lintOptions {
+-        disable 'GradleCompatible'
++
++    defaultConfig {
++        minSdkVersion getExtOrIntegerDefault('minSdkVersion')
++        targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
++        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+     }
+-    compileOptions {
+-        sourceCompatibility JavaVersion.VERSION_1_8
+-        targetCompatibility JavaVersion.VERSION_1_8
++
++    sourceSets.main {
++        java {
++            if (!isNewArchitectureEnabled()) {
++                srcDirs += 'src/paper/java'
++            }
++        }
+     }
+ }
+ 
+ repositories {
+-    mavenLocal()
+-    maven {
+-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+-        url("$rootDir/../node_modules/react-native/android")
+-    }
+     google()
+-    jcenter()
++    mavenLocal()
++    mavenCentral()
+ }
+ 
+ dependencies {
+     //noinspection GradleDynamicVersion
+-    implementation "com.facebook.react:react-native:+"  // From node_modules
++    implementation 'com.facebook.react:react-native:+' // from node_modules
+ }
+diff --git a/node_modules/react-native-document-picker/android/build/generated/source/buildConfig/debug/com/reactnativedocumentpicker/BuildConfig.java b/node_modules/react-native-document-picker/android/build/generated/source/buildConfig/debug/com/reactnativedocumentpicker/BuildConfig.java
+new file mode 100644
+index 0000000..e496ff4
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/generated/source/buildConfig/debug/com/reactnativedocumentpicker/BuildConfig.java
+@@ -0,0 +1,12 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package com.reactnativedocumentpicker;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = Boolean.parseBoolean("true");
++  public static final String LIBRARY_PACKAGE_NAME = "com.reactnativedocumentpicker";
++  public static final String BUILD_TYPE = "debug";
++  // Field from default config.
++  public static final boolean IS_NEW_ARCHITECTURE_ENABLED = false;
++}
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/react-native-document-picker/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..69460bb
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.reactnativedocumentpicker" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/react-native-document-picker/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..01d52e3
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "com.reactnativedocumentpicker",
++  "variantName": "debug",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/react-native-document-picker/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/react-native-document-picker/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/react-native-document-picker/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
+new file mode 100644
+index 0000000..b442b9b
+Binary files /dev/null and b/node_modules/react-native-document-picker/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/react-native-document-picker/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/react-native-document-picker/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..4ab583a
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1 @@
++#Wed May 21 15:32:01 PKT 2025
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/react-native-document-picker/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..58ea7a9
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\debug\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\debug\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\build\generated\res\resValues\debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\build\generated\res\resValues\debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/react-native-document-picker/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+new file mode 100644
+index 0000000..78ac5b8
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+@@ -0,0 +1,2 @@
++R_DEF: Internal format may change without notice
++local
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/react-native-document-picker/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..41b43b9
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,7 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="com.reactnativedocumentpicker" >
++4
++5    <uses-sdk android:minSdkVersion="24" />
++6
++7</manifest>
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/react-native-document-picker/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..69460bb
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.reactnativedocumentpicker" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/react-native-document-picker/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/react-native-document-picker/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/react-native-document-picker/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..df6e602
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+@@ -0,0 +1 @@
++com.reactnativedocumentpicker
+diff --git a/node_modules/react-native-document-picker/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/react-native-document-picker/android/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..4bd980d
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,17 @@
++-- Merging decision tree log ---
++manifest
++ADDED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml:1:1-4:12
++INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml:1:1-4:12
++	package
++		ADDED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml:2:11-50
++		INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml
++	xmlns:android
++		ADDED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml:1:11-69
++uses-sdk
++INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml
++INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from C:\Users\USER\Desktop\React native\medicine\Medicine_App\node_modules\react-native-document-picker\android\src\main\AndroidManifest.xml
+diff --git a/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/DocumentPickerPackage.java b/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/DocumentPickerPackage.java
+deleted file mode 100644
+index a0ddef6..0000000
+--- a/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/DocumentPickerPackage.java
++++ /dev/null
+@@ -1,28 +0,0 @@
+-package com.reactnativedocumentpicker;
+-
+-import androidx.annotation.NonNull;
+-
+-import com.facebook.react.ReactPackage;
+-import com.facebook.react.bridge.NativeModule;
+-import com.facebook.react.bridge.ReactApplicationContext;
+-import com.facebook.react.uimanager.ViewManager;
+-
+-import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.List;
+-
+-public class DocumentPickerPackage implements ReactPackage {
+-    @NonNull
+-    @Override
+-    public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
+-        List<NativeModule> modules = new ArrayList<>();
+-        modules.add(new DocumentPickerModule(reactContext));
+-        return modules;
+-    }
+-
+-    @NonNull
+-    @Override
+-    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
+-        return Collections.emptyList();
+-    }
+-}
+diff --git a/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/DocumentPickerModule.java b/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/RNDocumentPickerModule.java
+similarity index 69%
+rename from node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/DocumentPickerModule.java
+rename to node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/RNDocumentPickerModule.java
+index e3ada62..5001525 100644
+--- a/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/DocumentPickerModule.java
++++ b/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/RNDocumentPickerModule.java
+@@ -22,13 +22,11 @@ import com.facebook.react.bridge.GuardedResultAsyncTask;
+ import com.facebook.react.bridge.Promise;
+ import com.facebook.react.bridge.ReactApplicationContext;
+ import com.facebook.react.bridge.ReactContext;
+-import com.facebook.react.bridge.ReactContextBaseJavaModule;
+ import com.facebook.react.bridge.ReactMethod;
+ import com.facebook.react.bridge.ReadableArray;
+ import com.facebook.react.bridge.ReadableMap;
+ import com.facebook.react.bridge.WritableArray;
+ import com.facebook.react.bridge.WritableMap;
+-import com.facebook.react.module.annotations.ReactModule;
+ 
+ import java.io.File;
+ import java.io.FileOutputStream;
+@@ -39,8 +37,7 @@ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.UUID;
+ 
+-@ReactModule(name = DocumentPickerModule.NAME)
+-public class DocumentPickerModule extends ReactContextBaseJavaModule {
++public class RNDocumentPickerModule extends NativeDocumentPickerSpec {
+   public static final String NAME = "RNDocumentPicker";
+   private static final int READ_REQUEST_CODE = 41;
+   private static final int PICK_DIR_REQUEST_CODE = 42;
+@@ -64,17 +61,33 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+   private static final String FIELD_TYPE = "type";
+   private static final String FIELD_SIZE = "size";
+ 
++  private Promise promise;
++  private String copyTo;
++
++  public RNDocumentPickerModule(ReactApplicationContext reactContext) {
++    super(reactContext);
++    reactContext.addActivityEventListener(activityEventListener);
++  }
++
+   private final ActivityEventListener activityEventListener = new BaseActivityEventListener() {
+     @Override
+     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
++      boolean isForeignResult = requestCode != READ_REQUEST_CODE && requestCode != PICK_DIR_REQUEST_CODE;
++      if (isForeignResult) {
++        return;
++      }
+       final Promise storedPromise = promise;
+       if (storedPromise == null) {
+         Log.e(NAME, "promise was null in onActivityResult");
+         return;
+       }
++      if (resultCode == Activity.RESULT_CANCELED) {
++        sendError(E_DOCUMENT_PICKER_CANCELED, "User canceled directory picker");
++        return;
++      }
+       if (requestCode == READ_REQUEST_CODE) {
+         onShowActivityResult(resultCode, data, storedPromise);
+-      } else if (requestCode == PICK_DIR_REQUEST_CODE) {
++      } else {
+         onPickDirectoryResult(resultCode, data);
+       }
+     }
+@@ -89,18 +102,10 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+     return array;
+   }
+ 
+-  private Promise promise;
+-  private String copyTo;
+-
+-  public DocumentPickerModule(ReactApplicationContext reactContext) {
+-    super(reactContext);
+-    reactContext.addActivityEventListener(activityEventListener);
+-  }
+-
+   @Override
+-  public void onCatalystInstanceDestroy() {
+-    super.onCatalystInstanceDestroy();
++  public void invalidate() {
+     getReactApplicationContext().removeActivityEventListener(activityEventListener);
++    super.invalidate();
+   }
+ 
+   @NonNull
+@@ -131,6 +136,7 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+           if (types.size() > 1) {
+             String[] mimeTypes = readableArrayToStringArray(types);
+             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
++            intent.setType(String.join("|",mimeTypes));
+           } else if (types.size() == 1) {
+             intent.setType(types.getString(0));
+           }
+@@ -140,7 +146,7 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+       boolean multiple = !args.isNull(OPTION_MULTIPLE) && args.getBoolean(OPTION_MULTIPLE);
+       intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple);
+ 
+-      currentActivity.startActivityForResult(Intent.createChooser(intent, null), READ_REQUEST_CODE, Bundle.EMPTY);
++      currentActivity.startActivityForResult(intent, READ_REQUEST_CODE, Bundle.EMPTY);
+     } catch (ActivityNotFoundException e) {
+       sendError(E_UNABLE_TO_OPEN_FILE_TYPE, e.getLocalizedMessage());
+     } catch (Exception e) {
+@@ -166,11 +172,13 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+     }
+   }
+ 
++  @Override
++  public void releaseSecureAccess(ReadableArray uris, Promise promise) {
++    promise.reject("RNDocumentPicker:releaseSecureAccess", "releaseSecureAccess is not supported on Android");
++  }
++
+   private void onPickDirectoryResult(int resultCode, Intent data) {
+-    if (resultCode == Activity.RESULT_CANCELED) {
+-      sendError(E_DOCUMENT_PICKER_CANCELED, "User canceled directory picker");
+-      return;
+-    } else if (resultCode != Activity.RESULT_OK) {
++    if (resultCode != Activity.RESULT_OK) {
+       sendError(E_UNKNOWN_ACTIVITY_RESULT, "Unknown activity result: " + resultCode);
+       return;
+     }
+@@ -187,39 +195,37 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+   }
+ 
+   public void onShowActivityResult(int resultCode, Intent data, Promise promise) {
+-    if (resultCode == Activity.RESULT_CANCELED) {
+-      sendError(E_DOCUMENT_PICKER_CANCELED, "User canceled document picker");
+-    } else if (resultCode == Activity.RESULT_OK) {
+-      Uri uri = null;
+-      ClipData clipData = null;
+-
+-      if (data != null) {
+-        uri = data.getData();
+-        clipData = data.getClipData();
+-      }
++    if (resultCode != Activity.RESULT_OK) {
++      sendError(E_UNKNOWN_ACTIVITY_RESULT, "Unknown activity result: " + resultCode);
++      return;
++    }
++    Uri uri = null;
++    ClipData clipData = null;
+ 
+-      try {
+-        List<Uri> uris = new ArrayList<>();
+-        // condition order seems to matter: https://github.com/rnmods/react-native-document-picker/issues/317#issuecomment-645222635
+-        if (clipData != null && clipData.getItemCount() > 0) {
+-          final int length = clipData.getItemCount();
+-          for (int i = 0; i < length; ++i) {
+-            ClipData.Item item = clipData.getItemAt(i);
+-            uris.add(item.getUri());
+-          }
+-        } else if (uri != null) {
+-          uris.add(uri);
+-        } else {
+-          sendError(E_INVALID_DATA_RETURNED, "Invalid data returned by intent");
+-          return;
+-        }
++    if (data != null) {
++      uri = data.getData();
++      clipData = data.getClipData();
++    }
+ 
+-        new ProcessDataTask(getReactApplicationContext(), uris, copyTo, promise).execute();
+-      } catch (Exception e) {
+-        sendError(E_UNEXPECTED_EXCEPTION, e.getLocalizedMessage(), e);
++    try {
++      List<Uri> uris = new ArrayList<>();
++      // condition order seems to matter: https://github.com/rnmods/react-native-document-picker/issues/317#issuecomment-645222635
++      if (clipData != null && clipData.getItemCount() > 0) {
++        final int length = clipData.getItemCount();
++        for (int i = 0; i < length; ++i) {
++          ClipData.Item item = clipData.getItemAt(i);
++          uris.add(item.getUri());
++        }
++      } else if (uri != null) {
++        uris.add(uri);
++      } else {
++        sendError(E_INVALID_DATA_RETURNED, "Invalid data returned by intent");
++        return;
+       }
+-    } else {
+-      sendError(E_UNKNOWN_ACTIVITY_RESULT, "Unknown activity result: " + resultCode);
++
++      new ProcessDataTask(getReactApplicationContext(), uris, copyTo, promise).execute();
++    } catch (Exception e) {
++      sendError(E_UNEXPECTED_EXCEPTION, e.getLocalizedMessage(), e);
+     }
+   }
+ 
+@@ -266,14 +272,18 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+           if (!cursor.isNull(displayNameIndex)) {
+             String fileName = cursor.getString(displayNameIndex);
+             map.putString(FIELD_NAME, fileName);
++          } else {
++            map.putNull(FIELD_NAME);
+           }
+           int mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
+           if (!cursor.isNull(mimeIndex)) {
+             map.putString(FIELD_TYPE, cursor.getString(mimeIndex));
+           }
+           int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+-          if (!cursor.isNull(sizeIndex)) {
+-            map.putInt(FIELD_SIZE, cursor.getInt(sizeIndex));
++          if (cursor.isNull(sizeIndex)) {
++            map.putNull(FIELD_SIZE);
++          } else {
++            map.putDouble(FIELD_SIZE, cursor.getLong(sizeIndex));
+           }
+         }
+       }
+@@ -283,63 +293,56 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
+     }
+ 
+     private void prepareFileUri(Context context, WritableMap map, Uri uri) {
+-      if (copyTo != null) {
+-        File dir = context.getCacheDir();
+-        if (copyTo.equals("documentDirectory")) {
+-          dir = context.getFilesDir();
+-        }
+-        // we don't want to rename the file so we put it into a unique location
+-        dir = new File(dir, UUID.randomUUID().toString());
+-        try {
+-          boolean didCreateDir = dir.mkdir();
+-          if (!didCreateDir) {
+-            throw new IOException("failed to create directory at " + dir.getAbsolutePath());
+-          }
+-          String fileName = map.getString(FIELD_NAME);
+-          if (fileName == null) {
+-            fileName = String.valueOf(System.currentTimeMillis());
+-          }
+-          File destFile = new File(dir, fileName);
+-          String copyPath = copyFile(context, uri, destFile);
+-          map.putString(FIELD_FILE_COPY_URI, copyPath);
+-        } catch (Exception e) {
+-          e.printStackTrace();
+-          map.putNull(FIELD_FILE_COPY_URI);
+-          map.putString(FIELD_COPY_ERROR, e.getLocalizedMessage());
+-        }
+-      } else {
++      if (copyTo == null) {
+         map.putNull(FIELD_FILE_COPY_URI);
++      } else {
++        copyFileToLocalStorage(context, map, uri);
+       }
+     }
+ 
+-    public static String copyFile(Context context, Uri uri, File destFile) throws IOException {
+-      InputStream in = null;
+-      FileOutputStream out = null;
++    private void copyFileToLocalStorage(Context context, WritableMap map, Uri uri) {
++      File dir = context.getCacheDir();
++      if (copyTo.equals("documentDirectory")) {
++        dir = context.getFilesDir();
++      }
++      // we don't want to rename the file so we put it into a unique location
++      dir = new File(dir, UUID.randomUUID().toString());
+       try {
+-        in = context.getContentResolver().openInputStream(uri);
+-        if (in != null) {
+-          out = new FileOutputStream(destFile);
+-          byte[] buffer = new byte[1024];
+-          int len;
+-          while ((len = in.read(buffer)) > 0) {
+-            out.write(buffer, 0, len);
+-          }
+-          out.close();
+-          in.close();
+-          return destFile.getAbsolutePath();
+-        } else {
+-          throw new NullPointerException("Invalid input stream");
++        boolean didCreateDir = dir.mkdir();
++        if (!didCreateDir) {
++          throw new IOException("failed to create directory at " + dir.getAbsolutePath());
++        }
++        String fileName = map.getString(FIELD_NAME);
++        if (fileName == null) {
++          fileName = String.valueOf(System.currentTimeMillis());
+         }
++        File destFile = safeGetDestination(new File(dir, fileName), dir.getCanonicalPath());
++        Uri copyPath = copyFile(context, uri, destFile);
++        map.putString(FIELD_FILE_COPY_URI, copyPath.toString());
+       } catch (Exception e) {
+-        try {
+-          if (in != null) {
+-            in.close();
+-          }
+-          if (out != null) {
+-            out.close();
+-          }
+-        } catch (IOException ignored) {}
+-        throw e;
++        e.printStackTrace();
++        map.putNull(FIELD_FILE_COPY_URI);
++        map.putString(FIELD_COPY_ERROR, e.getLocalizedMessage());
++      }
++    }
++
++    public File safeGetDestination(File destFile, String expectedDir) throws IllegalArgumentException, IOException {
++      String canonicalPath = destFile.getCanonicalPath();
++      if (!canonicalPath.startsWith(expectedDir)) {
++        throw new IllegalArgumentException("The copied file is attempting to write outside of the target directory.");
++      }
++      return destFile;
++    }
++
++    public static Uri copyFile(Context context, Uri uri, File destFile) throws IOException {
++      try(InputStream inputStream = context.getContentResolver().openInputStream(uri);
++          FileOutputStream outputStream = new FileOutputStream(destFile)) {
++        byte[] buf = new byte[8192];
++        int len;
++        while ((len = inputStream.read(buf)) > 0) {
++          outputStream.write(buf, 0, len);
++        }
++        return Uri.fromFile(destFile);
+       }
+     }
+   }
+diff --git a/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/RNDocumentPickerPackage.java b/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/RNDocumentPickerPackage.java
+new file mode 100644
+index 0000000..3aaa938
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/src/main/java/com/reactnativedocumentpicker/RNDocumentPickerPackage.java
+@@ -0,0 +1,46 @@
++package com.reactnativedocumentpicker;
++
++import androidx.annotation.Nullable;
++
++import com.facebook.react.TurboReactPackage;
++import com.facebook.react.bridge.NativeModule;
++import com.facebook.react.bridge.ReactApplicationContext;
++import com.facebook.react.module.model.ReactModuleInfo;
++import com.facebook.react.module.model.ReactModuleInfoProvider;
++
++import java.util.HashMap;
++import java.util.Map;
++
++public class RNDocumentPickerPackage extends TurboReactPackage {
++
++  @Nullable
++  @Override
++  public NativeModule getModule(String name, ReactApplicationContext reactContext) {
++    if (name.equals(RNDocumentPickerModule.NAME)) {
++      return new RNDocumentPickerModule(reactContext);
++    } else {
++      return null;
++    }
++  }
++
++  @Override
++  public ReactModuleInfoProvider getReactModuleInfoProvider() {
++    return () -> {
++      boolean isTurboModule = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
++      final Map<String, ReactModuleInfo> moduleInfos = new HashMap<>();
++      moduleInfos.put(
++        RNDocumentPickerModule.NAME,
++        new ReactModuleInfo(
++          RNDocumentPickerModule.NAME,
++          RNDocumentPickerModule.NAME,
++//          "DocumentPickerModule",
++          false, // canOverrideExistingModule
++          false, // needsEagerInit
++          true, // hasConstants
++          false, // isCxxModule
++          isTurboModule // isTurboModule
++        ));
++      return moduleInfos;
++    };
++  }
++}
+diff --git a/node_modules/react-native-document-picker/android/src/paper/java/com/reactnativedocumentpicker/NativeDocumentPickerSpec.java b/node_modules/react-native-document-picker/android/src/paper/java/com/reactnativedocumentpicker/NativeDocumentPickerSpec.java
+new file mode 100644
+index 0000000..76323fa
+--- /dev/null
++++ b/node_modules/react-native-document-picker/android/src/paper/java/com/reactnativedocumentpicker/NativeDocumentPickerSpec.java
+@@ -0,0 +1,41 @@
++
++/**
++ * This code was generated by [react-native-codegen](https://www.npmjs.com/package/react-native-codegen).
++ *
++ * Then it was commited. It is here to support the old architecture.
++ * If you use the new architecture, this file won't be included and instead will be generated by the codegen.
++ *
++ * @generated by codegen project: GenerateModuleJavaSpec.js
++ *
++ * @nolint
++ */
++
++package com.reactnativedocumentpicker;
++
++import com.facebook.proguard.annotations.DoNotStrip;
++import com.facebook.react.bridge.Promise;
++import com.facebook.react.bridge.ReactApplicationContext;
++import com.facebook.react.bridge.ReactContextBaseJavaModule;
++import com.facebook.react.bridge.ReactMethod;
++import com.facebook.react.bridge.ReactModuleWithSpec;
++import com.facebook.react.bridge.ReadableArray;
++import com.facebook.react.bridge.ReadableMap;
++import com.facebook.react.turbomodule.core.interfaces.TurboModule;
++
++public abstract class NativeDocumentPickerSpec extends ReactContextBaseJavaModule implements ReactModuleWithSpec, TurboModule {
++  public NativeDocumentPickerSpec(ReactApplicationContext reactContext) {
++    super(reactContext);
++  }
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void pick(ReadableMap options, Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void releaseSecureAccess(ReadableArray uris, Promise promise);
++
++  @ReactMethod
++  @DoNotStrip
++  public abstract void pickDirectory(Promise promise);
++}
+diff --git a/node_modules/react-native-document-picker/ios/RCTConvert+RNDocumentPicker.h b/node_modules/react-native-document-picker/ios/RCTConvert+RNDocumentPicker.h
+new file mode 100644
+index 0000000..3a6241b
+--- /dev/null
++++ b/node_modules/react-native-document-picker/ios/RCTConvert+RNDocumentPicker.h
+@@ -0,0 +1,9 @@
++#import <React/RCTConvert.h>
++#import <UIKit/UIKit.h>
++
++@interface RCTConvert(RNDocumentPicker)
++
+++ (UIModalPresentationStyle)UIModalPresentationStyle:(NSString*)value;
+++ (UIModalTransitionStyle)UIModalTransitionStyle:(NSString*)value;
++
++@end
+diff --git a/node_modules/react-native-document-picker/ios/RCTConvert+RNDocumentPicker.m b/node_modules/react-native-document-picker/ios/RCTConvert+RNDocumentPicker.m
+new file mode 100644
+index 0000000..55b6fe2
+--- /dev/null
++++ b/node_modules/react-native-document-picker/ios/RCTConvert+RNDocumentPicker.m
+@@ -0,0 +1,28 @@
++#import "RCTConvert+RNDocumentPicker.h"
++
++@implementation RCTConvert (RNDocumentPicker)
++// TODO how to de-duplicate from https://github.com/facebook/react-native/blob/v0.66.0/React/Views/RCTModalHostViewManager.m?
++RCT_ENUM_CONVERTER(
++    UIModalPresentationStyle,
++    (@{
++      @"fullScreen" : @(UIModalPresentationFullScreen),
++      @"pageSheet" : @(UIModalPresentationPageSheet),
++      @"formSheet" : @(UIModalPresentationFormSheet),
++      @"overFullScreen" : @(UIModalPresentationOverFullScreen),
++    }),
++    UIModalPresentationFullScreen,
++    integerValue)
++
++
++RCT_ENUM_CONVERTER(
++    UIModalTransitionStyle,
++    (@{
++      @"coverVertical" : @(UIModalTransitionStyleCoverVertical),
++      @"flipHorizontal" : @(UIModalTransitionStyleFlipHorizontal),
++      @"crossDissolve" : @(UIModalTransitionStyleCrossDissolve),
++      @"partialCurl" : @(UIModalTransitionStylePartialCurl),
++    }),
++    UIModalTransitionStyleCoverVertical,
++    integerValue)
++
++@end
+diff --git a/node_modules/react-native-document-picker/ios/RNDocumentPicker.h b/node_modules/react-native-document-picker/ios/RNDocumentPicker.h
+index 695da83..ad42a24 100644
+--- a/node_modules/react-native-document-picker/ios/RNDocumentPicker.h
++++ b/node_modules/react-native-document-picker/ios/RNDocumentPicker.h
+@@ -1,7 +1,17 @@
++#ifdef RCT_NEW_ARCH_ENABLED
++#import <rndocumentpicker/rndocumentpicker.h>
++#else
+ #import <React/RCTBridgeModule.h>
++#endif
+ 
+-@import UIKit;
++#import <UIKit/UIKit.h>
+ 
+-@interface RNDocumentPicker : NSObject <RCTBridgeModule>
++@interface RNDocumentPicker : NSObject <
++#ifdef RCT_NEW_ARCH_ENABLED
++        NativeDocumentPickerSpec
++#else
++        RCTBridgeModule
++#endif
++    >
+ 
+ @end
+diff --git a/node_modules/react-native-document-picker/ios/RNDocumentPicker.m b/node_modules/react-native-document-picker/ios/RNDocumentPicker.mm
+similarity index 82%
+rename from node_modules/react-native-document-picker/ios/RNDocumentPicker.m
+rename to node_modules/react-native-document-picker/ios/RNDocumentPicker.mm
+index ca5e978..8cf6d55 100644
+--- a/node_modules/react-native-document-picker/ios/RNDocumentPicker.m
++++ b/node_modules/react-native-document-picker/ios/RNDocumentPicker.mm
+@@ -6,6 +6,7 @@
+ #import <React/RCTBridge.h>
+ #import <React/RCTUtils.h>
+ #import "RNCPromiseWrapper.h"
++#import "RCTConvert+RNDocumentPicker.h"
+ 
+ static NSString *const E_DOCUMENT_PICKER_CANCELED = @"DOCUMENT_PICKER_CANCELED";
+ static NSString *const E_INVALID_DATA_RETURNED = @"INVALID_DATA_RETURNED";
+@@ -20,22 +21,6 @@ static NSString *const FIELD_NAME = @"name";
+ static NSString *const FIELD_TYPE = @"type";
+ static NSString *const FIELD_SIZE = @"size";
+ 
+-@implementation RCTConvert (ModalPresentationStyle)
+-
+-
+-// TODO how to de-duplicate from https://github.com/facebook/react-native/blob/v0.66.0/React/Views/RCTModalHostViewManager.m?
+-RCT_ENUM_CONVERTER(
+-    UIModalPresentationStyle,
+-    (@{
+-      @"fullScreen" : @(UIModalPresentationFullScreen),
+-      @"pageSheet" : @(UIModalPresentationPageSheet),
+-      @"formSheet" : @(UIModalPresentationFormSheet),
+-      @"overFullScreen" : @(UIModalPresentationOverFullScreen),
+-    }),
+-    UIModalPresentationFullScreen,
+-    integerValue)
+-@end
+-
+ 
+ @interface RNDocumentPicker () <UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate>
+ @end
+@@ -47,8 +32,6 @@ RCT_ENUM_CONVERTER(
+     NSMutableArray *urlsInOpenMode;
+ }
+ 
+-@synthesize bridge = _bridge;
+-
+ - (instancetype)init
+ {
+     if ((self = [super init])) {
+@@ -78,17 +61,20 @@ RCT_ENUM_CONVERTER(
+ RCT_EXPORT_MODULE()
+ 
+ RCT_EXPORT_METHOD(pick:(NSDictionary *)options
+-                  resolver:(RCTPromiseResolveBlock)resolve
+-                  rejecter:(RCTPromiseRejectBlock)reject)
++                  resolve:(RCTPromiseResolveBlock)resolve
++                  reject:(RCTPromiseRejectBlock)reject)
+ {
+     mode = options[@"mode"] && [options[@"mode"] isEqualToString:@"open"] ? UIDocumentPickerModeOpen : UIDocumentPickerModeImport;
+     copyDestination = options[@"copyTo"];
+     UIModalPresentationStyle presentationStyle = [RCTConvert UIModalPresentationStyle:options[@"presentationStyle"]];
++    UIModalTransitionStyle transitionStyle = [RCTConvert UIModalTransitionStyle:options[@"transitionStyle"]];
+     [promiseWrapper setPromiseWithInProgressCheck:resolve rejecter:reject fromCallSite:@"pick"];
+ 
+     NSArray *allowedUTIs = [RCTConvert NSArray:options[OPTION_TYPE]];
+-    UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:(NSArray *)allowedUTIs inMode:mode];
++    UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:allowedUTIs inMode:mode];
++
+     documentPicker.modalPresentationStyle = presentationStyle;
++    documentPicker.modalTransitionStyle = transitionStyle;
+ 
+     documentPicker.delegate = self;
+     documentPicker.presentationController.delegate = self;
+@@ -126,6 +112,7 @@ RCT_EXPORT_METHOD(pick:(NSDictionary *)options
+         [urlsInOpenMode addObject:url];
+     }
+     
++    // TODO handle error
+     [url startAccessingSecurityScopedResource];
+ 
+     NSFileCoordinator *coordinator = [NSFileCoordinator new];
+@@ -137,10 +124,10 @@ RCT_EXPORT_METHOD(pick:(NSDictionary *)options
+         result[FIELD_URI] = ((mode == UIDocumentPickerModeOpen) ? url : newURL).absoluteString;
+         
+         NSError *copyError;
+-        NSString *maybeFileCopyPath = copyDestination ? [RNDocumentPicker copyToUniqueDestinationFrom:newURL usingDestinationPreset:copyDestination error:copyError].absoluteString : nil;
++        NSURL *maybeFileCopyPath = copyDestination ? [RNDocumentPicker copyToUniqueDestinationFrom:newURL usingDestinationPreset:copyDestination error:&copyError] : nil;
+         
+         if (!copyError) {
+-            result[FIELD_FILE_COPY_URI] = RCTNullIfNil(maybeFileCopyPath);
++            result[FIELD_FILE_COPY_URI] = RCTNullIfNil(maybeFileCopyPath.absoluteString);
+         } else {
+             result[FIELD_COPY_ERR] = copyError.localizedDescription;
+             result[FIELD_FILE_COPY_URI] = [NSNull null];
+@@ -158,7 +145,7 @@ RCT_EXPORT_METHOD(pick:(NSDictionary *)options
+         }
+ 
+         if (newURL.pathExtension != nil) {
+-            CFStringRef extension = (__bridge CFStringRef)[newURL pathExtension];
++            CFStringRef extension = (__bridge CFStringRef) newURL.pathExtension;
+             CFStringRef uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, extension, NULL);
+             CFStringRef mimeType = UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType);
+             if (uti) {
+@@ -185,8 +172,8 @@ RCT_EXPORT_METHOD(pick:(NSDictionary *)options
+ }
+ 
+ RCT_EXPORT_METHOD(releaseSecureAccess:(NSArray<NSString *> *)uris
+-                  resolver:(RCTPromiseResolveBlock)resolve
+-                  rejecter:(RCTPromiseRejectBlock)reject)
++                  resolve:(RCTPromiseResolveBlock)resolve
++                  reject:(RCTPromiseRejectBlock)reject)
+ {
+     NSMutableArray *discardedItems = [NSMutableArray array];
+     for (NSString *uri in uris) {
+@@ -202,7 +189,11 @@ RCT_EXPORT_METHOD(releaseSecureAccess:(NSArray<NSString *> *)uris
+     resolve(nil);
+ }
+ 
+-+ (NSURL *)copyToUniqueDestinationFrom:(NSURL *)url usingDestinationPreset:(NSString *)copyToDirectory error:(NSError *)error
++- (void)pickDirectory:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
++    reject(@"RNDocumentPicker:pickDirectory", @"pickDirectory is not supported on iOS", nil);
++}
++
+++ (NSURL *)copyToUniqueDestinationFrom:(NSURL *)url usingDestinationPreset:(NSString *)copyToDirectory error:(NSError **)error
+ {
+     NSURL *destinationRootDir = [self getDirectoryForFileCopy:copyToDirectory];
+     // we don't want to rename the file so we put it into a unique location
+@@ -210,13 +201,13 @@ RCT_EXPORT_METHOD(releaseSecureAccess:(NSArray<NSString *> *)uris
+     NSURL *destinationDir = [destinationRootDir URLByAppendingPathComponent:[NSString stringWithFormat:@"%@/", uniqueSubDirName]];
+     NSURL *destinationUrl = [destinationDir URLByAppendingPathComponent:[NSString stringWithFormat:@"%@", url.lastPathComponent]];
+ 
+-    [NSFileManager.defaultManager createDirectoryAtURL:destinationDir withIntermediateDirectories:YES attributes:nil error:&error];
+-    if (error) {
+-        return url;
++    [NSFileManager.defaultManager createDirectoryAtURL:destinationDir withIntermediateDirectories:YES attributes:nil error:error];
++    if (*error) {
++        return nil;
+     }
+-    [NSFileManager.defaultManager copyItemAtURL:url toURL:destinationUrl error:&error];
+-    if (error) {
+-        return url;
++    [NSFileManager.defaultManager copyItemAtURL:url toURL:destinationUrl error:error];
++    if (*error) {
++        return nil;
+     } else {
+         return destinationUrl;
+     }
+@@ -238,7 +229,8 @@ RCT_EXPORT_METHOD(releaseSecureAccess:(NSArray<NSString *> *)uris
+     [self rejectAsUserCancellationError];
+ }
+ 
+-- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
++- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController
++{
+     [self rejectAsUserCancellationError];
+ }
+ 
+@@ -249,4 +241,13 @@ RCT_EXPORT_METHOD(releaseSecureAccess:(NSArray<NSString *> *)uris
+     [promiseWrapper reject:@"user canceled the document picker" withCode:E_DOCUMENT_PICKER_CANCELED withError:error];
+ }
+ 
++// Thanks to this guard, we won't compile this code when we build for the old architecture.
++#ifdef RCT_NEW_ARCH_ENABLED
++- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
++    (const facebook::react::ObjCTurboModule::InitParams &)params
++{
++    return std::make_shared<facebook::react::NativeDocumentPickerSpecJSI>(params);
++}
++#endif
++
+ @end
+diff --git a/node_modules/react-native-document-picker/lib/commonjs/NativeDocumentPicker.js b/node_modules/react-native-document-picker/lib/commonjs/NativeDocumentPicker.js
+new file mode 100644
+index 0000000..0a57017
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/commonjs/NativeDocumentPicker.js
+@@ -0,0 +1,10 @@
++"use strict";
++
++Object.defineProperty(exports, "__esModule", {
++  value: true
++});
++exports.NativeDocumentPicker = void 0;
++var _reactNative = require("react-native");
++const NativeDocumentPicker = _reactNative.TurboModuleRegistry.getEnforcing('RNDocumentPicker');
++exports.NativeDocumentPicker = NativeDocumentPicker;
++//# sourceMappingURL=NativeDocumentPicker.js.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/commonjs/NativeDocumentPicker.js.map b/node_modules/react-native-document-picker/lib/commonjs/NativeDocumentPicker.js.map
+new file mode 100644
+index 0000000..ae7d5d3
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/commonjs/NativeDocumentPicker.js.map
+@@ -0,0 +1 @@
++{"version":3,"names":["_reactNative","require","NativeDocumentPicker","TurboModuleRegistry","getEnforcing","exports"],"sourceRoot":"../../src","sources":["NativeDocumentPicker.ts"],"mappings":";;;;;;AACA,IAAAA,YAAA,GAAAC,OAAA;AAyBO,MAAMC,oBAAoB,GAAGC,gCAAmB,CAACC,YAAY,CAAO,kBAAkB,CAAC;AAAAC,OAAA,CAAAH,oBAAA,GAAAA,oBAAA"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js b/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js
+index a31f449..0a46914 100644
+--- a/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js
++++ b/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js
+@@ -11,6 +11,7 @@ const mimeTypes = Object.freeze({
+   doc: 'application/msword',
+   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+   images: 'image/*',
++  json: 'application/json',
+   pdf: 'application/pdf',
+   plainText: 'text/plain',
+   ppt: 'application/vnd.ms-powerpoint',
+@@ -27,6 +28,7 @@ const utis = Object.freeze({
+   doc: 'com.microsoft.word.doc',
+   docx: 'org.openxmlformats.wordprocessingml.document',
+   images: 'public.image',
++  json: 'public.json',
+   pdf: 'com.adobe.pdf',
+   plainText: 'public.plain-text',
+   ppt: 'com.microsoft.powerpoint.ppt',
+@@ -43,6 +45,7 @@ const extensions = Object.freeze({
+   doc: '.doc',
+   docx: '.docx',
+   images: '.jpeg .jpg .png',
++  json: '.json',
+   pdf: '.pdf',
+   plainText: '.txt',
+   ppt: '.ppt',
+@@ -59,9 +62,10 @@ const perPlatformTypes = {
+   // unsupported, but added to make TS happy
+   macos: extensions,
+   web: extensions
+-}; // ensure shapes of platformTypes are the same: https://stackoverflow.com/a/67027347/2070942
+-// let me know if there's a nicer way
++};
+ 
++// ensure shapes of platformTypes are the same: https://stackoverflow.com/a/67027347/2070942
++// let me know if there's a nicer way
+ exports.perPlatformTypes = perPlatformTypes;
+ const mimesAndUtisAreEqual = true;
+ const mimesAndExtensionsAreEqual = true;
+diff --git a/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js.map b/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js.map
+index c97cec6..59b3c05 100644
+--- a/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js.map
++++ b/node_modules/react-native-document-picker/lib/commonjs/fileTypes.js.map
+@@ -1 +1 @@
+-{"version":3,"sources":["fileTypes.ts"],"names":["mimeTypes","Object","freeze","allFiles","audio","csv","doc","docx","images","pdf","plainText","ppt","pptx","video","xls","xlsx","zip","utis","extensions","perPlatformTypes","android","ios","windows","macos","web","mimesAndUtisAreEqual","mimesAndExtensionsAreEqual","typesAreEqual"],"mappings":";;;;;;AAAA,MAAMA,SAAS,GAAGC,MAAM,CAACC,MAAP,CAAc;AAC9BC,EAAAA,QAAQ,EAAE,KADoB;AAE9BC,EAAAA,KAAK,EAAE,SAFuB;AAG9BC,EAAAA,GAAG,EAAE,UAHyB;AAI9BC,EAAAA,GAAG,EAAE,oBAJyB;AAK9BC,EAAAA,IAAI,EAAE,yEALwB;AAM9BC,EAAAA,MAAM,EAAE,SANsB;AAO9BC,EAAAA,GAAG,EAAE,iBAPyB;AAQ9BC,EAAAA,SAAS,EAAE,YARmB;AAS9BC,EAAAA,GAAG,EAAE,+BATyB;AAU9BC,EAAAA,IAAI,EAAE,2EAVwB;AAW9BC,EAAAA,KAAK,EAAE,SAXuB;AAY9BC,EAAAA,GAAG,EAAE,0BAZyB;AAa9BC,EAAAA,IAAI,EAAE,mEAbwB;AAc9BC,EAAAA,GAAG,EAAE;AAdyB,CAAd,CAAlB;AAiBA,MAAMC,IAAI,GAAGhB,MAAM,CAACC,MAAP,CAAc;AACzBC,EAAAA,QAAQ,EAAE,aADe;AAEzBC,EAAAA,KAAK,EAAE,cAFkB;AAGzBC,EAAAA,GAAG,EAAE,oCAHoB;AAIzBC,EAAAA,GAAG,EAAE,wBAJoB;AAKzBC,EAAAA,IAAI,EAAE,8CALmB;AAMzBC,EAAAA,MAAM,EAAE,cANiB;AAOzBC,EAAAA,GAAG,EAAE,eAPoB;AAQzBC,EAAAA,SAAS,EAAE,mBARc;AASzBC,EAAAA,GAAG,EAAE,8BAToB;AAUzBC,EAAAA,IAAI,EAAE,gDAVmB;AAWzBC,EAAAA,KAAK,EAAE,cAXkB;AAYzBC,EAAAA,GAAG,EAAE,yBAZoB;AAazBC,EAAAA,IAAI,EAAE,wCAbmB;AAczBC,EAAAA,GAAG,EAAE;AAdoB,CAAd,CAAb;AAiBA,MAAME,UAAU,GAAGjB,MAAM,CAACC,MAAP,CAAc;AAC/BC,EAAAA,QAAQ,EAAE,GADqB;AAE/BC,EAAAA,KAAK,EACH,uHAH6B;AAI/BC,EAAAA,GAAG,EAAE,MAJ0B;AAK/BC,EAAAA,GAAG,EAAE,MAL0B;AAM/BC,EAAAA,IAAI,EAAE,OANyB;AAO/BC,EAAAA,MAAM,EAAE,iBAPuB;AAQ/BC,EAAAA,GAAG,EAAE,MAR0B;AAS/BC,EAAAA,SAAS,EAAE,MAToB;AAU/BC,EAAAA,GAAG,EAAE,MAV0B;AAW/BC,EAAAA,IAAI,EAAE,OAXyB;AAY/BC,EAAAA,KAAK,EAAE,MAZwB;AAa/BC,EAAAA,GAAG,EAAE,MAb0B;AAc/BC,EAAAA,IAAI,EAAE,OAdyB;AAe/BC,EAAAA,GAAG,EAAE;AAf0B,CAAd,CAAnB;AAyBO,MAAMG,gBAAgB,GAAG;AAC9BC,EAAAA,OAAO,EAAEpB,SADqB;AAE9BqB,EAAAA,GAAG,EAAEJ,IAFyB;AAG9BK,EAAAA,OAAO,EAAEJ,UAHqB;AAI9B;AACAK,EAAAA,KAAK,EAAEL,UALuB;AAM9BM,EAAAA,GAAG,EAAEN;AANyB,CAAzB,C,CASP;AACA;;;AASA,MAAMO,oBAAoE,GAAG,IAA7E;AACA,MAAMC,0BAAgF,GAAG,IAAzF;AACO,MAAMC,aAAa,GAAGF,oBAAoB,IAAIC,0BAA9C","sourcesContent":["const mimeTypes = Object.freeze({\n  allFiles: '*/*',\n  audio: 'audio/*',\n  csv: 'text/csv',\n  doc: 'application/msword',\n  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  images: 'image/*',\n  pdf: 'application/pdf',\n  plainText: 'text/plain',\n  ppt: 'application/vnd.ms-powerpoint',\n  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',\n  video: 'video/*',\n  xls: 'application/vnd.ms-excel',\n  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',\n  zip: 'application/zip',\n} as const)\n\nconst utis = Object.freeze({\n  allFiles: 'public.item',\n  audio: 'public.audio',\n  csv: 'public.comma-separated-values-text',\n  doc: 'com.microsoft.word.doc',\n  docx: 'org.openxmlformats.wordprocessingml.document',\n  images: 'public.image',\n  pdf: 'com.adobe.pdf',\n  plainText: 'public.plain-text',\n  ppt: 'com.microsoft.powerpoint.ppt',\n  pptx: 'org.openxmlformats.presentationml.presentation',\n  video: 'public.movie',\n  xls: 'com.microsoft.excel.xls',\n  xlsx: 'org.openxmlformats.spreadsheetml.sheet',\n  zip: 'public.zip-archive',\n} as const)\n\nconst extensions = Object.freeze({\n  allFiles: '*',\n  audio:\n    '.3g2 .3gp .aac .adt .adts .aif .aifc .aiff .asf .au .m3u .m4a .m4b .mid .midi .mp2 .mp3 .mp4 .rmi .snd .wav .wax .wma',\n  csv: '.csv',\n  doc: '.doc',\n  docx: '.docx',\n  images: '.jpeg .jpg .png',\n  pdf: '.pdf',\n  plainText: '.txt',\n  ppt: '.ppt',\n  pptx: '.pptx',\n  video: '.mp4',\n  xls: '.xls',\n  xlsx: '.xlsx',\n  zip: '.zip .gz',\n} as const)\n\nexport type PlatformTypes = {\n  android: typeof mimeTypes\n  ios: typeof utis\n  windows: typeof extensions\n}\nexport type SupportedPlatforms = 'ios' | 'android' | 'windows'\n\nexport const perPlatformTypes = {\n  android: mimeTypes,\n  ios: utis,\n  windows: extensions,\n  // unsupported, but added to make TS happy\n  macos: extensions,\n  web: extensions,\n}\n\n// ensure shapes of platformTypes are the same: https://stackoverflow.com/a/67027347/2070942\n// let me know if there's a nicer way\n\ntype AssertEqualKeys<T1 extends object, T2 extends object> = [\n  keyof T1 extends keyof T2 ? 1 : 0,\n  keyof T2 extends keyof T1 ? 1 : 0,\n] extends [1, 1]\n  ? true\n  : false\n\nconst mimesAndUtisAreEqual: AssertEqualKeys<typeof mimeTypes, typeof utis> = true\nconst mimesAndExtensionsAreEqual: AssertEqualKeys<typeof mimeTypes, typeof extensions> = true\nexport const typesAreEqual = mimesAndUtisAreEqual && mimesAndExtensionsAreEqual\n"]}
+\ No newline at end of file
++{"version":3,"names":["mimeTypes","Object","freeze","allFiles","audio","csv","doc","docx","images","json","pdf","plainText","ppt","pptx","video","xls","xlsx","zip","utis","extensions","perPlatformTypes","android","ios","windows","macos","web","exports","mimesAndUtisAreEqual","mimesAndExtensionsAreEqual","typesAreEqual"],"sourceRoot":"../../src","sources":["fileTypes.ts"],"mappings":";;;;;;AAAA,MAAMA,SAAS,GAAGC,MAAM,CAACC,MAAM,CAAC;EAC9BC,QAAQ,EAAE,KAAK;EACfC,KAAK,EAAE,SAAS;EAChBC,GAAG,EAAE,UAAU;EACfC,GAAG,EAAE,oBAAoB;EACzBC,IAAI,EAAE,yEAAyE;EAC/EC,MAAM,EAAE,SAAS;EACjBC,IAAI,EAAE,kBAAkB;EACxBC,GAAG,EAAE,iBAAiB;EACtBC,SAAS,EAAE,YAAY;EACvBC,GAAG,EAAE,+BAA+B;EACpCC,IAAI,EAAE,2EAA2E;EACjFC,KAAK,EAAE,SAAS;EAChBC,GAAG,EAAE,0BAA0B;EAC/BC,IAAI,EAAE,mEAAmE;EACzEC,GAAG,EAAE;AACP,CAAU,CAAC;AAEX,MAAMC,IAAI,GAAGjB,MAAM,CAACC,MAAM,CAAC;EACzBC,QAAQ,EAAE,aAAa;EACvBC,KAAK,EAAE,cAAc;EACrBC,GAAG,EAAE,oCAAoC;EACzCC,GAAG,EAAE,wBAAwB;EAC7BC,IAAI,EAAE,8CAA8C;EACpDC,MAAM,EAAE,cAAc;EACtBC,IAAI,EAAE,aAAa;EACnBC,GAAG,EAAE,eAAe;EACpBC,SAAS,EAAE,mBAAmB;EAC9BC,GAAG,EAAE,8BAA8B;EACnCC,IAAI,EAAE,gDAAgD;EACtDC,KAAK,EAAE,cAAc;EACrBC,GAAG,EAAE,yBAAyB;EAC9BC,IAAI,EAAE,wCAAwC;EAC9CC,GAAG,EAAE;AACP,CAAU,CAAC;AAEX,MAAME,UAAU,GAAGlB,MAAM,CAACC,MAAM,CAAC;EAC/BC,QAAQ,EAAE,GAAG;EACbC,KAAK,EACH,uHAAuH;EACzHC,GAAG,EAAE,MAAM;EACXC,GAAG,EAAE,MAAM;EACXC,IAAI,EAAE,OAAO;EACbC,MAAM,EAAE,iBAAiB;EACzBC,IAAI,EAAE,OAAO;EACbC,GAAG,EAAE,MAAM;EACXC,SAAS,EAAE,MAAM;EACjBC,GAAG,EAAE,MAAM;EACXC,IAAI,EAAE,OAAO;EACbC,KAAK,EAAE,MAAM;EACbC,GAAG,EAAE,MAAM;EACXC,IAAI,EAAE,OAAO;EACbC,GAAG,EAAE;AACP,CAAU,CAAC;AAIJ,MAAMG,gBAAgB,GAAG;EAC9BC,OAAO,EAAErB,SAAS;EAClBsB,GAAG,EAAEJ,IAAI;EACTK,OAAO,EAAEJ,UAAU;EACnB;EACAK,KAAK,EAAEL,UAAU;EACjBM,GAAG,EAAEN;AACP,CAAC;;AAED;AACA;AAAAO,OAAA,CAAAN,gBAAA,GAAAA,gBAAA;AASA,MAAMO,oBAAoE,GAAG,IAAI;AACjF,MAAMC,0BAAgF,GAAG,IAAI;AACtF,MAAMC,aAAa,GAAGF,oBAAoB,IAAIC,0BAA0B;AAAAF,OAAA,CAAAG,aAAA,GAAAA,aAAA"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/commonjs/index.js b/node_modules/react-native-document-picker/lib/commonjs/index.js
+index 24f7430..6781692 100644
+--- a/node_modules/react-native-document-picker/lib/commonjs/index.js
++++ b/node_modules/react-native-document-picker/lib/commonjs/index.js
+@@ -3,50 +3,43 @@
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
++exports.default = void 0;
++exports.isCancel = isCancel;
++exports.isInProgress = isInProgress;
++exports.pick = pick;
+ exports.pickDirectory = pickDirectory;
+-exports.pickMultiple = pickMultiple;
+ exports.pickSingle = pickSingle;
+-exports.pick = pick;
+ exports.releaseSecureAccess = releaseSecureAccess;
+-exports.isCancel = isCancel;
+-exports.isInProgress = isInProgress;
+-exports.default = exports.types = void 0;
+-
++exports.types = void 0;
+ var _reactNative = require("react-native");
+-
+ var _invariant = _interopRequireDefault(require("invariant"));
+-
+ var _fileTypes = require("./fileTypes");
+-
++var _NativeDocumentPicker = require("./NativeDocumentPicker");
+ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+-
+ const types = _fileTypes.perPlatformTypes[_reactNative.Platform.OS];
+ exports.types = types;
+-const RNDocumentPicker = _reactNative.NativeModules.RNDocumentPicker;
+-
+-function pickDirectory() {
+-  if (_reactNative.Platform.OS === 'android' || _reactNative.Platform.OS === 'windows') {
+-    return RNDocumentPicker.pickDirectory();
++async function pickDirectory(params) {
++  if (_reactNative.Platform.OS === 'ios') {
++    const result = await pick({
++      ...params,
++      mode: 'open',
++      allowMultiSelection: false,
++      type: ['public.folder']
++    });
++    return {
++      uri: result[0].uri
++    };
+   } else {
+-    // TODO iOS impl
+-    return Promise.resolve(null);
++    return _NativeDocumentPicker.NativeDocumentPicker.pickDirectory();
+   }
+ }
+-
+-function pickMultiple(opts) {
+-  const options = { ...opts,
+-    allowMultiSelection: true
+-  };
+-  return pick(options);
+-}
+-
+ function pickSingle(opts) {
+-  const options = { ...opts,
++  const options = {
++    ...opts,
+     allowMultiSelection: false
+   };
+   return pick(options).then(results => results[0]);
+ }
+-
+ function pick(opts) {
+   const options = {
+     // must be false to maintain old (v5) behavior
+@@ -56,68 +49,54 @@ function pick(opts) {
+   };
+   const newOpts = {
+     presentationStyle: 'formSheet',
++    transitionStyle: 'coverVertical',
+     ...options,
+     type: Array.isArray(options.type) ? options.type : [options.type]
+   };
+   return doPick(newOpts);
+ }
+-
+ function doPick(options) {
+-  var _options$mode, _options$copyTo;
+-
+   (0, _invariant.default)(!('filetype' in options), 'A `filetype` option was passed to DocumentPicker.pick, the correct option is `type`');
+   (0, _invariant.default)(!('types' in options), 'A `types` option was passed to DocumentPicker.pick, the correct option is `type`');
+   (0, _invariant.default)(options.type.every(type => typeof type === 'string'), `Unexpected type option in ${options.type}, did you try using a DocumentPicker.types.* that does not exist?`);
+   (0, _invariant.default)(options.type.length > 0, '`type` option should not be an empty array, at least one type must be passed if the `type` option is not omitted');
+-  (0, _invariant.default)( // @ts-ignore TS2345: Argument of type 'string' is not assignable to parameter of type 'PlatformTypes[OS][keyof PlatformTypes[OS]]'.
+-  !options.type.includes('folder'), 'RN document picker: "folder" option was removed, use "pickDirectory()"');
+-
+-  if ('mode' in options && !['import', 'open'].includes((_options$mode = options.mode) !== null && _options$mode !== void 0 ? _options$mode : '')) {
++  (0, _invariant.default)(!options.type.includes('folder'), 'RN document picker: "folder" option was removed, use "pickDirectory()"');
++  if ('mode' in options && !['import', 'open'].includes(options.mode ?? '')) {
+     throw new TypeError('Invalid mode option: ' + options.mode);
+   }
+-
+-  if ('copyTo' in options && !['cachesDirectory', 'documentDirectory'].includes((_options$copyTo = options.copyTo) !== null && _options$copyTo !== void 0 ? _options$copyTo : '')) {
++  if ('copyTo' in options && !['cachesDirectory', 'documentDirectory'].includes(options.copyTo ?? '')) {
+     throw new TypeError('Invalid copyTo option: ' + options.copyTo);
+   }
+-
+-  return RNDocumentPicker.pick(options);
++  return _NativeDocumentPicker.NativeDocumentPicker.pick(options);
+ }
+-
+ function releaseSecureAccess(uris) {
+   if (_reactNative.Platform.OS !== 'ios') {
+     return Promise.resolve();
+   }
+-
+   (0, _invariant.default)(Array.isArray(uris) && uris.every(uri => typeof uri === 'string'), `"uris" should be an array of strings, was ${uris}`);
+-  return RNDocumentPicker.releaseSecureAccess(uris);
++  return _NativeDocumentPicker.NativeDocumentPicker.releaseSecureAccess(uris);
+ }
+-
+ const E_DOCUMENT_PICKER_CANCELED = 'DOCUMENT_PICKER_CANCELED';
+ const E_DOCUMENT_PICKER_IN_PROGRESS = 'ASYNC_OP_IN_PROGRESS';
+-
+ function isCancel(err) {
+   return isErrorWithCode(err, E_DOCUMENT_PICKER_CANCELED);
+ }
+-
+ function isInProgress(err) {
+   return isErrorWithCode(err, E_DOCUMENT_PICKER_IN_PROGRESS);
+ }
+-
+ function isErrorWithCode(err, errorCode) {
+-  if (err instanceof Error && 'code' in err) {
++  if (err && typeof err === 'object' && 'code' in err) {
+     const nativeModuleErrorInstance = err;
+     return (nativeModuleErrorInstance === null || nativeModuleErrorInstance === void 0 ? void 0 : nativeModuleErrorInstance.code) === errorCode;
+   }
+-
+   return false;
+ }
+-
+ var _default = {
+   isCancel,
++  isInProgress,
+   releaseSecureAccess,
+   pickDirectory,
+   pick,
+-  pickMultiple,
+   pickSingle,
+   types,
+   perPlatformTypes: _fileTypes.perPlatformTypes
+diff --git a/node_modules/react-native-document-picker/lib/commonjs/index.js.map b/node_modules/react-native-document-picker/lib/commonjs/index.js.map
+index 9011c00..14a9414 100644
+--- a/node_modules/react-native-document-picker/lib/commonjs/index.js.map
++++ b/node_modules/react-native-document-picker/lib/commonjs/index.js.map
+@@ -1 +1 @@
+-{"version":3,"sources":["index.tsx"],"names":["types","perPlatformTypes","Platform","OS","RNDocumentPicker","NativeModules","pickDirectory","Promise","resolve","pickMultiple","opts","options","allowMultiSelection","pick","pickSingle","then","results","type","allFiles","newOpts","presentationStyle","Array","isArray","doPick","every","length","includes","mode","TypeError","copyTo","releaseSecureAccess","uris","uri","E_DOCUMENT_PICKER_CANCELED","E_DOCUMENT_PICKER_IN_PROGRESS","isCancel","err","isErrorWithCode","isInProgress","errorCode","Error","nativeModuleErrorInstance","code"],"mappings":"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","sourcesContent":["import { Platform, NativeModules, ModalPropsIOS } from 'react-native'\nimport invariant from 'invariant'\nimport type { PlatformTypes, SupportedPlatforms } from './fileTypes'\nimport { perPlatformTypes } from './fileTypes'\n\nexport type DocumentPickerResponse = {\n  uri: string\n  name: string\n  copyError?: string\n  fileCopyUri: string | null\n  type: string | null\n  size: number | null\n}\n\nexport const types = perPlatformTypes[Platform.OS]\n\nexport type DirectoryPickerResponse = {\n  uri: string\n}\n\ntype DocumentPickerType = {\n  pick(options: Record<string, any>): Promise<DocumentPickerResponse[]>\n  releaseSecureAccess(uris: string[]): Promise<void>\n  pickDirectory(): Promise<DirectoryPickerResponse>\n}\n\nconst RNDocumentPicker: DocumentPickerType = NativeModules.RNDocumentPicker\n\nexport type DocumentPickerOptions<OS extends SupportedPlatforms> = {\n  type?:\n    | string\n    | PlatformTypes[OS][keyof PlatformTypes[OS]]\n    | Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>\n  mode?: 'import' | 'open'\n  copyTo?: 'cachesDirectory' | 'documentDirectory'\n  allowMultiSelection?: boolean\n} & Pick<ModalPropsIOS, 'presentationStyle'>\n\nexport function pickDirectory(): Promise<DirectoryPickerResponse | null> {\n  if (Platform.OS === 'android' || Platform.OS === 'windows') {\n    return RNDocumentPicker.pickDirectory()\n  } else {\n    // TODO iOS impl\n    return Promise.resolve(null)\n  }\n}\n\nexport function pickMultiple<OS extends SupportedPlatforms>(\n  opts?: DocumentPickerOptions<OS>,\n): Promise<DocumentPickerResponse[]> {\n  const options = {\n    ...opts,\n    allowMultiSelection: true,\n  }\n  return pick(options)\n}\nexport function pickSingle<OS extends SupportedPlatforms>(\n  opts?: DocumentPickerOptions<OS>,\n): Promise<DocumentPickerResponse> {\n  const options = {\n    ...opts,\n    allowMultiSelection: false,\n  }\n  return pick(options).then((results) => results[0])\n}\n\nexport function pick<OS extends SupportedPlatforms>(\n  opts?: DocumentPickerOptions<OS>,\n): Promise<DocumentPickerResponse[]> {\n  const options = {\n    // must be false to maintain old (v5) behavior\n    allowMultiSelection: false,\n    type: [types.allFiles],\n    ...opts,\n  }\n\n  const newOpts: DoPickParams<OS> = {\n    presentationStyle: 'formSheet',\n    ...options,\n    type: Array.isArray(options.type) ? options.type : [options.type],\n  }\n\n  return doPick(newOpts)\n}\n\ntype DoPickParams<OS extends SupportedPlatforms> = DocumentPickerOptions<OS> & {\n  type: Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>\n  allowMultiSelection: boolean\n  presentationStyle: NonNullable<ModalPropsIOS['presentationStyle']>\n}\n\nfunction doPick<OS extends SupportedPlatforms>(\n  options: DoPickParams<OS>,\n): Promise<DocumentPickerResponse[]> {\n  invariant(\n    !('filetype' in options),\n    'A `filetype` option was passed to DocumentPicker.pick, the correct option is `type`',\n  )\n  invariant(\n    !('types' in options),\n    'A `types` option was passed to DocumentPicker.pick, the correct option is `type`',\n  )\n\n  invariant(\n    options.type.every((type: unknown) => typeof type === 'string'),\n    `Unexpected type option in ${options.type}, did you try using a DocumentPicker.types.* that does not exist?`,\n  )\n  invariant(\n    options.type.length > 0,\n    '`type` option should not be an empty array, at least one type must be passed if the `type` option is not omitted',\n  )\n\n  invariant(\n    // @ts-ignore TS2345: Argument of type 'string' is not assignable to parameter of type 'PlatformTypes[OS][keyof PlatformTypes[OS]]'.\n    !options.type.includes('folder'),\n    'RN document picker: \"folder\" option was removed, use \"pickDirectory()\"',\n  )\n\n  if ('mode' in options && !['import', 'open'].includes(options.mode ?? '')) {\n    throw new TypeError('Invalid mode option: ' + options.mode)\n  }\n\n  if (\n    'copyTo' in options &&\n    !['cachesDirectory', 'documentDirectory'].includes(options.copyTo ?? '')\n  ) {\n    throw new TypeError('Invalid copyTo option: ' + options.copyTo)\n  }\n\n  return RNDocumentPicker.pick(options)\n}\n\nexport function releaseSecureAccess(uris: Array<string>): Promise<void> {\n  if (Platform.OS !== 'ios') {\n    return Promise.resolve()\n  }\n\n  invariant(\n    Array.isArray(uris) && uris.every((uri) => typeof uri === 'string'),\n    `\"uris\" should be an array of strings, was ${uris}`,\n  )\n\n  return RNDocumentPicker.releaseSecureAccess(uris)\n}\n\nconst E_DOCUMENT_PICKER_CANCELED = 'DOCUMENT_PICKER_CANCELED'\nconst E_DOCUMENT_PICKER_IN_PROGRESS = 'ASYNC_OP_IN_PROGRESS'\n\nexport type NativeModuleErrorShape = Error & { code?: string }\n\nexport function isCancel(err: unknown): boolean {\n  return isErrorWithCode(err, E_DOCUMENT_PICKER_CANCELED)\n}\n\nexport function isInProgress(err: unknown): boolean {\n  return isErrorWithCode(err, E_DOCUMENT_PICKER_IN_PROGRESS)\n}\n\nfunction isErrorWithCode(err: unknown, errorCode: string): boolean {\n  if (err instanceof Error && 'code' in err) {\n    const nativeModuleErrorInstance = err as NativeModuleErrorShape\n    return nativeModuleErrorInstance?.code === errorCode\n  }\n  return false\n}\n\nexport default {\n  isCancel,\n  releaseSecureAccess,\n  pickDirectory,\n  pick,\n  pickMultiple,\n  pickSingle,\n  types,\n  perPlatformTypes,\n}\n"]}
+\ No newline at end of file
++{"version":3,"names":["_reactNative","require","_invariant","_interopRequireDefault","_fileTypes","_NativeDocumentPicker","obj","__esModule","default","types","perPlatformTypes","Platform","OS","exports","pickDirectory","params","result","pick","mode","allowMultiSelection","type","uri","NativeDocumentPicker","pickSingle","opts","options","then","results","allFiles","newOpts","presentationStyle","transitionStyle","Array","isArray","doPick","invariant","every","length","includes","TypeError","copyTo","releaseSecureAccess","uris","Promise","resolve","E_DOCUMENT_PICKER_CANCELED","E_DOCUMENT_PICKER_IN_PROGRESS","isCancel","err","isErrorWithCode","isInProgress","errorCode","nativeModuleErrorInstance","code","_default"],"sourceRoot":"../../src","sources":["index.tsx"],"mappings":"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"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/module/NativeDocumentPicker.js b/node_modules/react-native-document-picker/lib/module/NativeDocumentPicker.js
+new file mode 100644
+index 0000000..e84273f
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/module/NativeDocumentPicker.js
+@@ -0,0 +1,3 @@
++import { TurboModuleRegistry } from 'react-native';
++export const NativeDocumentPicker = TurboModuleRegistry.getEnforcing('RNDocumentPicker');
++//# sourceMappingURL=NativeDocumentPicker.js.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/module/NativeDocumentPicker.js.map b/node_modules/react-native-document-picker/lib/module/NativeDocumentPicker.js.map
+new file mode 100644
+index 0000000..5aabed7
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/module/NativeDocumentPicker.js.map
+@@ -0,0 +1 @@
++{"version":3,"names":["TurboModuleRegistry","NativeDocumentPicker","getEnforcing"],"sourceRoot":"../../src","sources":["NativeDocumentPicker.ts"],"mappings":"AACA,SAASA,mBAAmB,QAAQ,cAAc;AAyBlD,OAAO,MAAMC,oBAAoB,GAAGD,mBAAmB,CAACE,YAAY,CAAO,kBAAkB,CAAC"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/module/fileTypes.js b/node_modules/react-native-document-picker/lib/module/fileTypes.js
+index fa9d159..383cf9f 100644
+--- a/node_modules/react-native-document-picker/lib/module/fileTypes.js
++++ b/node_modules/react-native-document-picker/lib/module/fileTypes.js
+@@ -5,6 +5,7 @@ const mimeTypes = Object.freeze({
+   doc: 'application/msword',
+   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+   images: 'image/*',
++  json: 'application/json',
+   pdf: 'application/pdf',
+   plainText: 'text/plain',
+   ppt: 'application/vnd.ms-powerpoint',
+@@ -21,6 +22,7 @@ const utis = Object.freeze({
+   doc: 'com.microsoft.word.doc',
+   docx: 'org.openxmlformats.wordprocessingml.document',
+   images: 'public.image',
++  json: 'public.json',
+   pdf: 'com.adobe.pdf',
+   plainText: 'public.plain-text',
+   ppt: 'com.microsoft.powerpoint.ppt',
+@@ -37,6 +39,7 @@ const extensions = Object.freeze({
+   doc: '.doc',
+   docx: '.docx',
+   images: '.jpeg .jpg .png',
++  json: '.json',
+   pdf: '.pdf',
+   plainText: '.txt',
+   ppt: '.ppt',
+@@ -53,9 +56,10 @@ export const perPlatformTypes = {
+   // unsupported, but added to make TS happy
+   macos: extensions,
+   web: extensions
+-}; // ensure shapes of platformTypes are the same: https://stackoverflow.com/a/67027347/2070942
+-// let me know if there's a nicer way
++};
+ 
++// ensure shapes of platformTypes are the same: https://stackoverflow.com/a/67027347/2070942
++// let me know if there's a nicer way
+ const mimesAndUtisAreEqual = true;
+ const mimesAndExtensionsAreEqual = true;
+ export const typesAreEqual = mimesAndUtisAreEqual && mimesAndExtensionsAreEqual;
+diff --git a/node_modules/react-native-document-picker/lib/module/fileTypes.js.map b/node_modules/react-native-document-picker/lib/module/fileTypes.js.map
+index 6e1c56f..28691bd 100644
+--- a/node_modules/react-native-document-picker/lib/module/fileTypes.js.map
++++ b/node_modules/react-native-document-picker/lib/module/fileTypes.js.map
+@@ -1 +1 @@
+-{"version":3,"sources":["fileTypes.ts"],"names":["mimeTypes","Object","freeze","allFiles","audio","csv","doc","docx","images","pdf","plainText","ppt","pptx","video","xls","xlsx","zip","utis","extensions","perPlatformTypes","android","ios","windows","macos","web","mimesAndUtisAreEqual","mimesAndExtensionsAreEqual","typesAreEqual"],"mappings":"AAAA,MAAMA,SAAS,GAAGC,MAAM,CAACC,MAAP,CAAc;AAC9BC,EAAAA,QAAQ,EAAE,KADoB;AAE9BC,EAAAA,KAAK,EAAE,SAFuB;AAG9BC,EAAAA,GAAG,EAAE,UAHyB;AAI9BC,EAAAA,GAAG,EAAE,oBAJyB;AAK9BC,EAAAA,IAAI,EAAE,yEALwB;AAM9BC,EAAAA,MAAM,EAAE,SANsB;AAO9BC,EAAAA,GAAG,EAAE,iBAPyB;AAQ9BC,EAAAA,SAAS,EAAE,YARmB;AAS9BC,EAAAA,GAAG,EAAE,+BATyB;AAU9BC,EAAAA,IAAI,EAAE,2EAVwB;AAW9BC,EAAAA,KAAK,EAAE,SAXuB;AAY9BC,EAAAA,GAAG,EAAE,0BAZyB;AAa9BC,EAAAA,IAAI,EAAE,mEAbwB;AAc9BC,EAAAA,GAAG,EAAE;AAdyB,CAAd,CAAlB;AAiBA,MAAMC,IAAI,GAAGhB,MAAM,CAACC,MAAP,CAAc;AACzBC,EAAAA,QAAQ,EAAE,aADe;AAEzBC,EAAAA,KAAK,EAAE,cAFkB;AAGzBC,EAAAA,GAAG,EAAE,oCAHoB;AAIzBC,EAAAA,GAAG,EAAE,wBAJoB;AAKzBC,EAAAA,IAAI,EAAE,8CALmB;AAMzBC,EAAAA,MAAM,EAAE,cANiB;AAOzBC,EAAAA,GAAG,EAAE,eAPoB;AAQzBC,EAAAA,SAAS,EAAE,mBARc;AASzBC,EAAAA,GAAG,EAAE,8BAToB;AAUzBC,EAAAA,IAAI,EAAE,gDAVmB;AAWzBC,EAAAA,KAAK,EAAE,cAXkB;AAYzBC,EAAAA,GAAG,EAAE,yBAZoB;AAazBC,EAAAA,IAAI,EAAE,wCAbmB;AAczBC,EAAAA,GAAG,EAAE;AAdoB,CAAd,CAAb;AAiBA,MAAME,UAAU,GAAGjB,MAAM,CAACC,MAAP,CAAc;AAC/BC,EAAAA,QAAQ,EAAE,GADqB;AAE/BC,EAAAA,KAAK,EACH,uHAH6B;AAI/BC,EAAAA,GAAG,EAAE,MAJ0B;AAK/BC,EAAAA,GAAG,EAAE,MAL0B;AAM/BC,EAAAA,IAAI,EAAE,OANyB;AAO/BC,EAAAA,MAAM,EAAE,iBAPuB;AAQ/BC,EAAAA,GAAG,EAAE,MAR0B;AAS/BC,EAAAA,SAAS,EAAE,MAToB;AAU/BC,EAAAA,GAAG,EAAE,MAV0B;AAW/BC,EAAAA,IAAI,EAAE,OAXyB;AAY/BC,EAAAA,KAAK,EAAE,MAZwB;AAa/BC,EAAAA,GAAG,EAAE,MAb0B;AAc/BC,EAAAA,IAAI,EAAE,OAdyB;AAe/BC,EAAAA,GAAG,EAAE;AAf0B,CAAd,CAAnB;AAyBA,OAAO,MAAMG,gBAAgB,GAAG;AAC9BC,EAAAA,OAAO,EAAEpB,SADqB;AAE9BqB,EAAAA,GAAG,EAAEJ,IAFyB;AAG9BK,EAAAA,OAAO,EAAEJ,UAHqB;AAI9B;AACAK,EAAAA,KAAK,EAAEL,UALuB;AAM9BM,EAAAA,GAAG,EAAEN;AANyB,CAAzB,C,CASP;AACA;;AASA,MAAMO,oBAAoE,GAAG,IAA7E;AACA,MAAMC,0BAAgF,GAAG,IAAzF;AACA,OAAO,MAAMC,aAAa,GAAGF,oBAAoB,IAAIC,0BAA9C","sourcesContent":["const mimeTypes = Object.freeze({\n  allFiles: '*/*',\n  audio: 'audio/*',\n  csv: 'text/csv',\n  doc: 'application/msword',\n  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  images: 'image/*',\n  pdf: 'application/pdf',\n  plainText: 'text/plain',\n  ppt: 'application/vnd.ms-powerpoint',\n  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',\n  video: 'video/*',\n  xls: 'application/vnd.ms-excel',\n  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',\n  zip: 'application/zip',\n} as const)\n\nconst utis = Object.freeze({\n  allFiles: 'public.item',\n  audio: 'public.audio',\n  csv: 'public.comma-separated-values-text',\n  doc: 'com.microsoft.word.doc',\n  docx: 'org.openxmlformats.wordprocessingml.document',\n  images: 'public.image',\n  pdf: 'com.adobe.pdf',\n  plainText: 'public.plain-text',\n  ppt: 'com.microsoft.powerpoint.ppt',\n  pptx: 'org.openxmlformats.presentationml.presentation',\n  video: 'public.movie',\n  xls: 'com.microsoft.excel.xls',\n  xlsx: 'org.openxmlformats.spreadsheetml.sheet',\n  zip: 'public.zip-archive',\n} as const)\n\nconst extensions = Object.freeze({\n  allFiles: '*',\n  audio:\n    '.3g2 .3gp .aac .adt .adts .aif .aifc .aiff .asf .au .m3u .m4a .m4b .mid .midi .mp2 .mp3 .mp4 .rmi .snd .wav .wax .wma',\n  csv: '.csv',\n  doc: '.doc',\n  docx: '.docx',\n  images: '.jpeg .jpg .png',\n  pdf: '.pdf',\n  plainText: '.txt',\n  ppt: '.ppt',\n  pptx: '.pptx',\n  video: '.mp4',\n  xls: '.xls',\n  xlsx: '.xlsx',\n  zip: '.zip .gz',\n} as const)\n\nexport type PlatformTypes = {\n  android: typeof mimeTypes\n  ios: typeof utis\n  windows: typeof extensions\n}\nexport type SupportedPlatforms = 'ios' | 'android' | 'windows'\n\nexport const perPlatformTypes = {\n  android: mimeTypes,\n  ios: utis,\n  windows: extensions,\n  // unsupported, but added to make TS happy\n  macos: extensions,\n  web: extensions,\n}\n\n// ensure shapes of platformTypes are the same: https://stackoverflow.com/a/67027347/2070942\n// let me know if there's a nicer way\n\ntype AssertEqualKeys<T1 extends object, T2 extends object> = [\n  keyof T1 extends keyof T2 ? 1 : 0,\n  keyof T2 extends keyof T1 ? 1 : 0,\n] extends [1, 1]\n  ? true\n  : false\n\nconst mimesAndUtisAreEqual: AssertEqualKeys<typeof mimeTypes, typeof utis> = true\nconst mimesAndExtensionsAreEqual: AssertEqualKeys<typeof mimeTypes, typeof extensions> = true\nexport const typesAreEqual = mimesAndUtisAreEqual && mimesAndExtensionsAreEqual\n"]}
+\ No newline at end of file
++{"version":3,"names":["mimeTypes","Object","freeze","allFiles","audio","csv","doc","docx","images","json","pdf","plainText","ppt","pptx","video","xls","xlsx","zip","utis","extensions","perPlatformTypes","android","ios","windows","macos","web","mimesAndUtisAreEqual","mimesAndExtensionsAreEqual","typesAreEqual"],"sourceRoot":"../../src","sources":["fileTypes.ts"],"mappings":"AAAA,MAAMA,SAAS,GAAGC,MAAM,CAACC,MAAM,CAAC;EAC9BC,QAAQ,EAAE,KAAK;EACfC,KAAK,EAAE,SAAS;EAChBC,GAAG,EAAE,UAAU;EACfC,GAAG,EAAE,oBAAoB;EACzBC,IAAI,EAAE,yEAAyE;EAC/EC,MAAM,EAAE,SAAS;EACjBC,IAAI,EAAE,kBAAkB;EACxBC,GAAG,EAAE,iBAAiB;EACtBC,SAAS,EAAE,YAAY;EACvBC,GAAG,EAAE,+BAA+B;EACpCC,IAAI,EAAE,2EAA2E;EACjFC,KAAK,EAAE,SAAS;EAChBC,GAAG,EAAE,0BAA0B;EAC/BC,IAAI,EAAE,mEAAmE;EACzEC,GAAG,EAAE;AACP,CAAU,CAAC;AAEX,MAAMC,IAAI,GAAGjB,MAAM,CAACC,MAAM,CAAC;EACzBC,QAAQ,EAAE,aAAa;EACvBC,KAAK,EAAE,cAAc;EACrBC,GAAG,EAAE,oCAAoC;EACzCC,GAAG,EAAE,wBAAwB;EAC7BC,IAAI,EAAE,8CAA8C;EACpDC,MAAM,EAAE,cAAc;EACtBC,IAAI,EAAE,aAAa;EACnBC,GAAG,EAAE,eAAe;EACpBC,SAAS,EAAE,mBAAmB;EAC9BC,GAAG,EAAE,8BAA8B;EACnCC,IAAI,EAAE,gDAAgD;EACtDC,KAAK,EAAE,cAAc;EACrBC,GAAG,EAAE,yBAAyB;EAC9BC,IAAI,EAAE,wCAAwC;EAC9CC,GAAG,EAAE;AACP,CAAU,CAAC;AAEX,MAAME,UAAU,GAAGlB,MAAM,CAACC,MAAM,CAAC;EAC/BC,QAAQ,EAAE,GAAG;EACbC,KAAK,EACH,uHAAuH;EACzHC,GAAG,EAAE,MAAM;EACXC,GAAG,EAAE,MAAM;EACXC,IAAI,EAAE,OAAO;EACbC,MAAM,EAAE,iBAAiB;EACzBC,IAAI,EAAE,OAAO;EACbC,GAAG,EAAE,MAAM;EACXC,SAAS,EAAE,MAAM;EACjBC,GAAG,EAAE,MAAM;EACXC,IAAI,EAAE,OAAO;EACbC,KAAK,EAAE,MAAM;EACbC,GAAG,EAAE,MAAM;EACXC,IAAI,EAAE,OAAO;EACbC,GAAG,EAAE;AACP,CAAU,CAAC;AAIX,OAAO,MAAMG,gBAAgB,GAAG;EAC9BC,OAAO,EAAErB,SAAS;EAClBsB,GAAG,EAAEJ,IAAI;EACTK,OAAO,EAAEJ,UAAU;EACnB;EACAK,KAAK,EAAEL,UAAU;EACjBM,GAAG,EAAEN;AACP,CAAC;;AAED;AACA;AASA,MAAMO,oBAAoE,GAAG,IAAI;AACjF,MAAMC,0BAAgF,GAAG,IAAI;AAC7F,OAAO,MAAMC,aAAa,GAAGF,oBAAoB,IAAIC,0BAA0B"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/module/index.js b/node_modules/react-native-document-picker/lib/module/index.js
+index 7176193..864c588 100644
+--- a/node_modules/react-native-document-picker/lib/module/index.js
++++ b/node_modules/react-native-document-picker/lib/module/index.js
+@@ -1,24 +1,26 @@
+-import { Platform, NativeModules } from 'react-native';
++import { Platform } from 'react-native';
+ import invariant from 'invariant';
+ import { perPlatformTypes } from './fileTypes';
++import { NativeDocumentPicker } from './NativeDocumentPicker';
+ export const types = perPlatformTypes[Platform.OS];
+-const RNDocumentPicker = NativeModules.RNDocumentPicker;
+-export function pickDirectory() {
+-  if (Platform.OS === 'android' || Platform.OS === 'windows') {
+-    return RNDocumentPicker.pickDirectory();
++export async function pickDirectory(params) {
++  if (Platform.OS === 'ios') {
++    const result = await pick({
++      ...params,
++      mode: 'open',
++      allowMultiSelection: false,
++      type: ['public.folder']
++    });
++    return {
++      uri: result[0].uri
++    };
+   } else {
+-    // TODO iOS impl
+-    return Promise.resolve(null);
++    return NativeDocumentPicker.pickDirectory();
+   }
+ }
+-export function pickMultiple(opts) {
+-  const options = { ...opts,
+-    allowMultiSelection: true
+-  };
+-  return pick(options);
+-}
+ export function pickSingle(opts) {
+-  const options = { ...opts,
++  const options = {
++    ...opts,
+     allowMultiSelection: false
+   };
+   return pick(options).then(results => results[0]);
+@@ -32,40 +34,32 @@ export function pick(opts) {
+   };
+   const newOpts = {
+     presentationStyle: 'formSheet',
++    transitionStyle: 'coverVertical',
+     ...options,
+     type: Array.isArray(options.type) ? options.type : [options.type]
+   };
+   return doPick(newOpts);
+ }
+-
+ function doPick(options) {
+-  var _options$mode, _options$copyTo;
+-
+   invariant(!('filetype' in options), 'A `filetype` option was passed to DocumentPicker.pick, the correct option is `type`');
+   invariant(!('types' in options), 'A `types` option was passed to DocumentPicker.pick, the correct option is `type`');
+   invariant(options.type.every(type => typeof type === 'string'), `Unexpected type option in ${options.type}, did you try using a DocumentPicker.types.* that does not exist?`);
+   invariant(options.type.length > 0, '`type` option should not be an empty array, at least one type must be passed if the `type` option is not omitted');
+-  invariant( // @ts-ignore TS2345: Argument of type 'string' is not assignable to parameter of type 'PlatformTypes[OS][keyof PlatformTypes[OS]]'.
+-  !options.type.includes('folder'), 'RN document picker: "folder" option was removed, use "pickDirectory()"');
+-
+-  if ('mode' in options && !['import', 'open'].includes((_options$mode = options.mode) !== null && _options$mode !== void 0 ? _options$mode : '')) {
++  invariant(!options.type.includes('folder'), 'RN document picker: "folder" option was removed, use "pickDirectory()"');
++  if ('mode' in options && !['import', 'open'].includes(options.mode ?? '')) {
+     throw new TypeError('Invalid mode option: ' + options.mode);
+   }
+-
+-  if ('copyTo' in options && !['cachesDirectory', 'documentDirectory'].includes((_options$copyTo = options.copyTo) !== null && _options$copyTo !== void 0 ? _options$copyTo : '')) {
++  if ('copyTo' in options && !['cachesDirectory', 'documentDirectory'].includes(options.copyTo ?? '')) {
+     throw new TypeError('Invalid copyTo option: ' + options.copyTo);
+   }
+-
+-  return RNDocumentPicker.pick(options);
++  return NativeDocumentPicker.pick(options);
+ }
+-
+ export function releaseSecureAccess(uris) {
+   if (Platform.OS !== 'ios') {
+     return Promise.resolve();
+   }
+-
+   invariant(Array.isArray(uris) && uris.every(uri => typeof uri === 'string'), `"uris" should be an array of strings, was ${uris}`);
+-  return RNDocumentPicker.releaseSecureAccess(uris);
++  return NativeDocumentPicker.releaseSecureAccess(uris);
+ }
+ const E_DOCUMENT_PICKER_CANCELED = 'DOCUMENT_PICKER_CANCELED';
+ const E_DOCUMENT_PICKER_IN_PROGRESS = 'ASYNC_OP_IN_PROGRESS';
+@@ -75,22 +69,19 @@ export function isCancel(err) {
+ export function isInProgress(err) {
+   return isErrorWithCode(err, E_DOCUMENT_PICKER_IN_PROGRESS);
+ }
+-
+ function isErrorWithCode(err, errorCode) {
+-  if (err instanceof Error && 'code' in err) {
++  if (err && typeof err === 'object' && 'code' in err) {
+     const nativeModuleErrorInstance = err;
+     return (nativeModuleErrorInstance === null || nativeModuleErrorInstance === void 0 ? void 0 : nativeModuleErrorInstance.code) === errorCode;
+   }
+-
+   return false;
+ }
+-
+ export default {
+   isCancel,
++  isInProgress,
+   releaseSecureAccess,
+   pickDirectory,
+   pick,
+-  pickMultiple,
+   pickSingle,
+   types,
+   perPlatformTypes
+diff --git a/node_modules/react-native-document-picker/lib/module/index.js.map b/node_modules/react-native-document-picker/lib/module/index.js.map
+index 54315a2..0b963c4 100644
+--- a/node_modules/react-native-document-picker/lib/module/index.js.map
++++ b/node_modules/react-native-document-picker/lib/module/index.js.map
+@@ -1 +1 @@
+-{"version":3,"sources":["index.tsx"],"names":["Platform","NativeModules","invariant","perPlatformTypes","types","OS","RNDocumentPicker","pickDirectory","Promise","resolve","pickMultiple","opts","options","allowMultiSelection","pick","pickSingle","then","results","type","allFiles","newOpts","presentationStyle","Array","isArray","doPick","every","length","includes","mode","TypeError","copyTo","releaseSecureAccess","uris","uri","E_DOCUMENT_PICKER_CANCELED","E_DOCUMENT_PICKER_IN_PROGRESS","isCancel","err","isErrorWithCode","isInProgress","errorCode","Error","nativeModuleErrorInstance","code"],"mappings":"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","sourcesContent":["import { Platform, NativeModules, ModalPropsIOS } from 'react-native'\nimport invariant from 'invariant'\nimport type { PlatformTypes, SupportedPlatforms } from './fileTypes'\nimport { perPlatformTypes } from './fileTypes'\n\nexport type DocumentPickerResponse = {\n  uri: string\n  name: string\n  copyError?: string\n  fileCopyUri: string | null\n  type: string | null\n  size: number | null\n}\n\nexport const types = perPlatformTypes[Platform.OS]\n\nexport type DirectoryPickerResponse = {\n  uri: string\n}\n\ntype DocumentPickerType = {\n  pick(options: Record<string, any>): Promise<DocumentPickerResponse[]>\n  releaseSecureAccess(uris: string[]): Promise<void>\n  pickDirectory(): Promise<DirectoryPickerResponse>\n}\n\nconst RNDocumentPicker: DocumentPickerType = NativeModules.RNDocumentPicker\n\nexport type DocumentPickerOptions<OS extends SupportedPlatforms> = {\n  type?:\n    | string\n    | PlatformTypes[OS][keyof PlatformTypes[OS]]\n    | Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>\n  mode?: 'import' | 'open'\n  copyTo?: 'cachesDirectory' | 'documentDirectory'\n  allowMultiSelection?: boolean\n} & Pick<ModalPropsIOS, 'presentationStyle'>\n\nexport function pickDirectory(): Promise<DirectoryPickerResponse | null> {\n  if (Platform.OS === 'android' || Platform.OS === 'windows') {\n    return RNDocumentPicker.pickDirectory()\n  } else {\n    // TODO iOS impl\n    return Promise.resolve(null)\n  }\n}\n\nexport function pickMultiple<OS extends SupportedPlatforms>(\n  opts?: DocumentPickerOptions<OS>,\n): Promise<DocumentPickerResponse[]> {\n  const options = {\n    ...opts,\n    allowMultiSelection: true,\n  }\n  return pick(options)\n}\nexport function pickSingle<OS extends SupportedPlatforms>(\n  opts?: DocumentPickerOptions<OS>,\n): Promise<DocumentPickerResponse> {\n  const options = {\n    ...opts,\n    allowMultiSelection: false,\n  }\n  return pick(options).then((results) => results[0])\n}\n\nexport function pick<OS extends SupportedPlatforms>(\n  opts?: DocumentPickerOptions<OS>,\n): Promise<DocumentPickerResponse[]> {\n  const options = {\n    // must be false to maintain old (v5) behavior\n    allowMultiSelection: false,\n    type: [types.allFiles],\n    ...opts,\n  }\n\n  const newOpts: DoPickParams<OS> = {\n    presentationStyle: 'formSheet',\n    ...options,\n    type: Array.isArray(options.type) ? options.type : [options.type],\n  }\n\n  return doPick(newOpts)\n}\n\ntype DoPickParams<OS extends SupportedPlatforms> = DocumentPickerOptions<OS> & {\n  type: Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>\n  allowMultiSelection: boolean\n  presentationStyle: NonNullable<ModalPropsIOS['presentationStyle']>\n}\n\nfunction doPick<OS extends SupportedPlatforms>(\n  options: DoPickParams<OS>,\n): Promise<DocumentPickerResponse[]> {\n  invariant(\n    !('filetype' in options),\n    'A `filetype` option was passed to DocumentPicker.pick, the correct option is `type`',\n  )\n  invariant(\n    !('types' in options),\n    'A `types` option was passed to DocumentPicker.pick, the correct option is `type`',\n  )\n\n  invariant(\n    options.type.every((type: unknown) => typeof type === 'string'),\n    `Unexpected type option in ${options.type}, did you try using a DocumentPicker.types.* that does not exist?`,\n  )\n  invariant(\n    options.type.length > 0,\n    '`type` option should not be an empty array, at least one type must be passed if the `type` option is not omitted',\n  )\n\n  invariant(\n    // @ts-ignore TS2345: Argument of type 'string' is not assignable to parameter of type 'PlatformTypes[OS][keyof PlatformTypes[OS]]'.\n    !options.type.includes('folder'),\n    'RN document picker: \"folder\" option was removed, use \"pickDirectory()\"',\n  )\n\n  if ('mode' in options && !['import', 'open'].includes(options.mode ?? '')) {\n    throw new TypeError('Invalid mode option: ' + options.mode)\n  }\n\n  if (\n    'copyTo' in options &&\n    !['cachesDirectory', 'documentDirectory'].includes(options.copyTo ?? '')\n  ) {\n    throw new TypeError('Invalid copyTo option: ' + options.copyTo)\n  }\n\n  return RNDocumentPicker.pick(options)\n}\n\nexport function releaseSecureAccess(uris: Array<string>): Promise<void> {\n  if (Platform.OS !== 'ios') {\n    return Promise.resolve()\n  }\n\n  invariant(\n    Array.isArray(uris) && uris.every((uri) => typeof uri === 'string'),\n    `\"uris\" should be an array of strings, was ${uris}`,\n  )\n\n  return RNDocumentPicker.releaseSecureAccess(uris)\n}\n\nconst E_DOCUMENT_PICKER_CANCELED = 'DOCUMENT_PICKER_CANCELED'\nconst E_DOCUMENT_PICKER_IN_PROGRESS = 'ASYNC_OP_IN_PROGRESS'\n\nexport type NativeModuleErrorShape = Error & { code?: string }\n\nexport function isCancel(err: unknown): boolean {\n  return isErrorWithCode(err, E_DOCUMENT_PICKER_CANCELED)\n}\n\nexport function isInProgress(err: unknown): boolean {\n  return isErrorWithCode(err, E_DOCUMENT_PICKER_IN_PROGRESS)\n}\n\nfunction isErrorWithCode(err: unknown, errorCode: string): boolean {\n  if (err instanceof Error && 'code' in err) {\n    const nativeModuleErrorInstance = err as NativeModuleErrorShape\n    return nativeModuleErrorInstance?.code === errorCode\n  }\n  return false\n}\n\nexport default {\n  isCancel,\n  releaseSecureAccess,\n  pickDirectory,\n  pick,\n  pickMultiple,\n  pickSingle,\n  types,\n  perPlatformTypes,\n}\n"]}
+\ No newline at end of file
++{"version":3,"names":["Platform","invariant","perPlatformTypes","NativeDocumentPicker","types","OS","pickDirectory","params","result","pick","mode","allowMultiSelection","type","uri","pickSingle","opts","options","then","results","allFiles","newOpts","presentationStyle","transitionStyle","Array","isArray","doPick","every","length","includes","TypeError","copyTo","releaseSecureAccess","uris","Promise","resolve","E_DOCUMENT_PICKER_CANCELED","E_DOCUMENT_PICKER_IN_PROGRESS","isCancel","err","isErrorWithCode","isInProgress","errorCode","nativeModuleErrorInstance","code"],"sourceRoot":"../../src","sources":["index.tsx"],"mappings":"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"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/typescript/NativeDocumentPicker.d.ts b/node_modules/react-native-document-picker/lib/typescript/NativeDocumentPicker.d.ts
+new file mode 100644
+index 0000000..3001584
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/typescript/NativeDocumentPicker.d.ts
+@@ -0,0 +1,20 @@
++import type { TurboModule } from 'react-native';
++export type DocumentPickerResponse = {
++    uri: string;
++    name: string;
++    copyError?: string;
++    fileCopyUri: string | null;
++    type: string | null;
++    size: number | null;
++};
++export type DirectoryPickerResponse = {
++    uri: string;
++};
++export interface Spec extends TurboModule {
++    readonly getConstants: () => {};
++    pick(options: Object): Promise<DocumentPickerResponse[]>;
++    releaseSecureAccess(uris: string[]): Promise<void>;
++    pickDirectory(): Promise<DirectoryPickerResponse>;
++}
++export declare const NativeDocumentPicker: Spec;
++//# sourceMappingURL=NativeDocumentPicker.d.ts.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/typescript/NativeDocumentPicker.d.ts.map b/node_modules/react-native-document-picker/lib/typescript/NativeDocumentPicker.d.ts.map
+new file mode 100644
+index 0000000..eba5c08
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/typescript/NativeDocumentPicker.d.ts.map
+@@ -0,0 +1 @@
++{"version":3,"file":"NativeDocumentPicker.d.ts","sourceRoot":"","sources":["../../src/NativeDocumentPicker.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,cAAc,CAAA;AAG/C,MAAM,MAAM,sBAAsB,GAAG;IACnC,GAAG,EAAE,MAAM,CAAA;IACX,IAAI,EAAE,MAAM,CAAA;IACZ,SAAS,CAAC,EAAE,MAAM,CAAA;IAClB,WAAW,EAAE,MAAM,GAAG,IAAI,CAAA;IAC1B,IAAI,EAAE,MAAM,GAAG,IAAI,CAAA;IACnB,IAAI,EAAE,MAAM,GAAG,IAAI,CAAA;CACpB,CAAA;AAED,MAAM,MAAM,uBAAuB,GAAG;IACpC,GAAG,EAAE,MAAM,CAAA;CACZ,CAAA;AAED,MAAM,WAAW,IAAK,SAAQ,WAAW;IACvC,QAAQ,CAAC,YAAY,EAAE,MAAM,EAAE,CAAA;IAI/B,IAAI,CAAC,OAAO,EAAE,MAAM,GAAG,OAAO,CAAC,sBAAsB,EAAE,CAAC,CAAA;IACxD,mBAAmB,CAAC,IAAI,EAAE,MAAM,EAAE,GAAG,OAAO,CAAC,IAAI,CAAC,CAAA;IAClD,aAAa,IAAI,OAAO,CAAC,uBAAuB,CAAC,CAAA;CAClD;AAED,eAAO,MAAM,oBAAoB,MAA6D,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts b/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts
+index ffa9d91..e4da1e7 100644
+--- a/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts
++++ b/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts
+@@ -5,6 +5,7 @@ declare const mimeTypes: Readonly<{
+     readonly doc: "application/msword";
+     readonly docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+     readonly images: "image/*";
++    readonly json: "application/json";
+     readonly pdf: "application/pdf";
+     readonly plainText: "text/plain";
+     readonly ppt: "application/vnd.ms-powerpoint";
+@@ -21,6 +22,7 @@ declare const utis: Readonly<{
+     readonly doc: "com.microsoft.word.doc";
+     readonly docx: "org.openxmlformats.wordprocessingml.document";
+     readonly images: "public.image";
++    readonly json: "public.json";
+     readonly pdf: "com.adobe.pdf";
+     readonly plainText: "public.plain-text";
+     readonly ppt: "com.microsoft.powerpoint.ppt";
+@@ -37,6 +39,7 @@ declare const extensions: Readonly<{
+     readonly doc: ".doc";
+     readonly docx: ".docx";
+     readonly images: ".jpeg .jpg .png";
++    readonly json: ".json";
+     readonly pdf: ".pdf";
+     readonly plainText: ".txt";
+     readonly ppt: ".ppt";
+@@ -46,12 +49,7 @@ declare const extensions: Readonly<{
+     readonly xlsx: ".xlsx";
+     readonly zip: ".zip .gz";
+ }>;
+-export declare type PlatformTypes = {
+-    android: typeof mimeTypes;
+-    ios: typeof utis;
+-    windows: typeof extensions;
+-};
+-export declare type SupportedPlatforms = 'ios' | 'android' | 'windows';
++export type PlatformTypes = typeof mimeTypes | typeof utis | typeof extensions;
+ export declare const perPlatformTypes: {
+     android: Readonly<{
+         readonly allFiles: "*/*";
+@@ -60,6 +58,7 @@ export declare const perPlatformTypes: {
+         readonly doc: "application/msword";
+         readonly docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+         readonly images: "image/*";
++        readonly json: "application/json";
+         readonly pdf: "application/pdf";
+         readonly plainText: "text/plain";
+         readonly ppt: "application/vnd.ms-powerpoint";
+@@ -76,6 +75,7 @@ export declare const perPlatformTypes: {
+         readonly doc: "com.microsoft.word.doc";
+         readonly docx: "org.openxmlformats.wordprocessingml.document";
+         readonly images: "public.image";
++        readonly json: "public.json";
+         readonly pdf: "com.adobe.pdf";
+         readonly plainText: "public.plain-text";
+         readonly ppt: "com.microsoft.powerpoint.ppt";
+@@ -92,6 +92,7 @@ export declare const perPlatformTypes: {
+         readonly doc: ".doc";
+         readonly docx: ".docx";
+         readonly images: ".jpeg .jpg .png";
++        readonly json: ".json";
+         readonly pdf: ".pdf";
+         readonly plainText: ".txt";
+         readonly ppt: ".ppt";
+@@ -108,6 +109,7 @@ export declare const perPlatformTypes: {
+         readonly doc: ".doc";
+         readonly docx: ".docx";
+         readonly images: ".jpeg .jpg .png";
++        readonly json: ".json";
+         readonly pdf: ".pdf";
+         readonly plainText: ".txt";
+         readonly ppt: ".ppt";
+@@ -124,6 +126,7 @@ export declare const perPlatformTypes: {
+         readonly doc: ".doc";
+         readonly docx: ".docx";
+         readonly images: ".jpeg .jpg .png";
++        readonly json: ".json";
+         readonly pdf: ".pdf";
+         readonly plainText: ".txt";
+         readonly ppt: ".ppt";
+@@ -136,3 +139,4 @@ export declare const perPlatformTypes: {
+ };
+ export declare const typesAreEqual: true;
+ export {};
++//# sourceMappingURL=fileTypes.d.ts.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts.map b/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts.map
+new file mode 100644
+index 0000000..8f6ca64
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/typescript/fileTypes.d.ts.map
+@@ -0,0 +1 @@
++{"version":3,"file":"fileTypes.d.ts","sourceRoot":"","sources":["../../src/fileTypes.ts"],"names":[],"mappings":"AAAA,QAAA,MAAM,SAAS;;;;;;;;;;;;;;;;EAgBJ,CAAA;AAEX,QAAA,MAAM,IAAI;;;;;;;;;;;;;;;;EAgBC,CAAA;AAEX,QAAA,MAAM,UAAU;;;;;;;;;;;;;;;;EAiBL,CAAA;AAEX,MAAM,MAAM,aAAa,GAAG,OAAO,SAAS,GAAG,OAAO,IAAI,GAAG,OAAO,UAAU,CAAA;AAE9E,eAAO,MAAM,gBAAgB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;CAO5B,CAAA;AAcD,eAAO,MAAM,aAAa,MAAqD,CAAA"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/typescript/index.d.ts b/node_modules/react-native-document-picker/lib/typescript/index.d.ts
+index dc44c90..fc68f57 100644
+--- a/node_modules/react-native-document-picker/lib/typescript/index.d.ts
++++ b/node_modules/react-native-document-picker/lib/typescript/index.d.ts
+@@ -1,8 +1,8 @@
+ import { ModalPropsIOS } from 'react-native';
+-import type { PlatformTypes, SupportedPlatforms } from './fileTypes';
+-export declare type DocumentPickerResponse = {
++import type { PlatformTypes } from './fileTypes';
++export type DocumentPickerResponse = {
+     uri: string;
+-    name: string;
++    name: string | null;
+     copyError?: string;
+     fileCopyUri: string | null;
+     type: string | null;
+@@ -15,6 +15,7 @@ export declare const types: Readonly<{
+     readonly doc: "application/msword";
+     readonly docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+     readonly images: "image/*";
++    readonly json: "application/json";
+     readonly pdf: "application/pdf";
+     readonly plainText: "text/plain";
+     readonly ppt: "application/vnd.ms-powerpoint";
+@@ -30,6 +31,7 @@ export declare const types: Readonly<{
+     readonly doc: "com.microsoft.word.doc";
+     readonly docx: "org.openxmlformats.wordprocessingml.document";
+     readonly images: "public.image";
++    readonly json: "public.json";
+     readonly pdf: "com.adobe.pdf";
+     readonly plainText: "public.plain-text";
+     readonly ppt: "com.microsoft.powerpoint.ppt";
+@@ -45,6 +47,7 @@ export declare const types: Readonly<{
+     readonly doc: ".doc";
+     readonly docx: ".docx";
+     readonly images: ".jpeg .jpg .png";
++    readonly json: ".json";
+     readonly pdf: ".pdf";
+     readonly plainText: ".txt";
+     readonly ppt: ".ppt";
+@@ -54,31 +57,32 @@ export declare const types: Readonly<{
+     readonly xlsx: ".xlsx";
+     readonly zip: ".zip .gz";
+ }>;
+-export declare type DirectoryPickerResponse = {
++export type DirectoryPickerResponse = {
+     uri: string;
+ };
+-export declare type DocumentPickerOptions<OS extends SupportedPlatforms> = {
+-    type?: string | PlatformTypes[OS][keyof PlatformTypes[OS]] | Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>;
++export type TransitionStyle = 'coverVertical' | 'flipHorizontal' | 'crossDissolve' | 'partialCurl';
++export type DocumentPickerOptions = {
++    type?: string | Array<PlatformTypes | string>;
+     mode?: 'import' | 'open';
+     copyTo?: 'cachesDirectory' | 'documentDirectory';
+     allowMultiSelection?: boolean;
++    transitionStyle?: TransitionStyle;
+ } & Pick<ModalPropsIOS, 'presentationStyle'>;
+-export declare function pickDirectory(): Promise<DirectoryPickerResponse | null>;
+-export declare function pickMultiple<OS extends SupportedPlatforms>(opts?: DocumentPickerOptions<OS>): Promise<DocumentPickerResponse[]>;
+-export declare function pickSingle<OS extends SupportedPlatforms>(opts?: DocumentPickerOptions<OS>): Promise<DocumentPickerResponse>;
+-export declare function pick<OS extends SupportedPlatforms>(opts?: DocumentPickerOptions<OS>): Promise<DocumentPickerResponse[]>;
++export declare function pickDirectory(params?: Pick<DocumentPickerOptions, 'presentationStyle' | 'transitionStyle'>): Promise<DirectoryPickerResponse | null>;
++export declare function pickSingle(opts?: DocumentPickerOptions): Promise<DocumentPickerResponse>;
++export declare function pick(opts?: DocumentPickerOptions): Promise<DocumentPickerResponse[]>;
+ export declare function releaseSecureAccess(uris: Array<string>): Promise<void>;
+-export declare type NativeModuleErrorShape = Error & {
++export type NativeModuleErrorShape = Error & {
+     code?: string;
+ };
+ export declare function isCancel(err: unknown): boolean;
+ export declare function isInProgress(err: unknown): boolean;
+ declare const _default: {
+     isCancel: typeof isCancel;
++    isInProgress: typeof isInProgress;
+     releaseSecureAccess: typeof releaseSecureAccess;
+     pickDirectory: typeof pickDirectory;
+     pick: typeof pick;
+-    pickMultiple: typeof pickMultiple;
+     pickSingle: typeof pickSingle;
+     types: Readonly<{
+         readonly allFiles: "*/*";
+@@ -87,6 +91,7 @@ declare const _default: {
+         readonly doc: "application/msword";
+         readonly docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+         readonly images: "image/*";
++        readonly json: "application/json";
+         readonly pdf: "application/pdf";
+         readonly plainText: "text/plain";
+         readonly ppt: "application/vnd.ms-powerpoint";
+@@ -102,6 +107,7 @@ declare const _default: {
+         readonly doc: "com.microsoft.word.doc";
+         readonly docx: "org.openxmlformats.wordprocessingml.document";
+         readonly images: "public.image";
++        readonly json: "public.json";
+         readonly pdf: "com.adobe.pdf";
+         readonly plainText: "public.plain-text";
+         readonly ppt: "com.microsoft.powerpoint.ppt";
+@@ -117,6 +123,7 @@ declare const _default: {
+         readonly doc: ".doc";
+         readonly docx: ".docx";
+         readonly images: ".jpeg .jpg .png";
++        readonly json: ".json";
+         readonly pdf: ".pdf";
+         readonly plainText: ".txt";
+         readonly ppt: ".ppt";
+@@ -134,6 +141,7 @@ declare const _default: {
+             readonly doc: "application/msword";
+             readonly docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+             readonly images: "image/*";
++            readonly json: "application/json";
+             readonly pdf: "application/pdf";
+             readonly plainText: "text/plain";
+             readonly ppt: "application/vnd.ms-powerpoint";
+@@ -150,6 +158,7 @@ declare const _default: {
+             readonly doc: "com.microsoft.word.doc";
+             readonly docx: "org.openxmlformats.wordprocessingml.document";
+             readonly images: "public.image";
++            readonly json: "public.json";
+             readonly pdf: "com.adobe.pdf";
+             readonly plainText: "public.plain-text";
+             readonly ppt: "com.microsoft.powerpoint.ppt";
+@@ -166,6 +175,7 @@ declare const _default: {
+             readonly doc: ".doc";
+             readonly docx: ".docx";
+             readonly images: ".jpeg .jpg .png";
++            readonly json: ".json";
+             readonly pdf: ".pdf";
+             readonly plainText: ".txt";
+             readonly ppt: ".ppt";
+@@ -182,6 +192,7 @@ declare const _default: {
+             readonly doc: ".doc";
+             readonly docx: ".docx";
+             readonly images: ".jpeg .jpg .png";
++            readonly json: ".json";
+             readonly pdf: ".pdf";
+             readonly plainText: ".txt";
+             readonly ppt: ".ppt";
+@@ -198,6 +209,7 @@ declare const _default: {
+             readonly doc: ".doc";
+             readonly docx: ".docx";
+             readonly images: ".jpeg .jpg .png";
++            readonly json: ".json";
+             readonly pdf: ".pdf";
+             readonly plainText: ".txt";
+             readonly ppt: ".ppt";
+@@ -210,3 +222,4 @@ declare const _default: {
+     };
+ };
+ export default _default;
++//# sourceMappingURL=index.d.ts.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/lib/typescript/index.d.ts.map b/node_modules/react-native-document-picker/lib/typescript/index.d.ts.map
+new file mode 100644
+index 0000000..12203c1
+--- /dev/null
++++ b/node_modules/react-native-document-picker/lib/typescript/index.d.ts.map
+@@ -0,0 +1 @@
++{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../src/index.tsx"],"names":[],"mappings":"AAAA,OAAO,EAAY,aAAa,EAAE,MAAM,cAAc,CAAA;AAEtD,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,aAAa,CAAA;AAIhD,MAAM,MAAM,sBAAsB,GAAG;IACnC,GAAG,EAAE,MAAM,CAAA;IACX,IAAI,EAAE,MAAM,GAAG,IAAI,CAAA;IACnB,SAAS,CAAC,EAAE,MAAM,CAAA;IAClB,WAAW,EAAE,MAAM,GAAG,IAAI,CAAA;IAC1B,IAAI,EAAE,MAAM,GAAG,IAAI,CAAA;IACnB,IAAI,EAAE,MAAM,GAAG,IAAI,CAAA;CACpB,CAAA;AAED,eAAO,MAAM,KAAK;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAgC,CAAA;AAElD,MAAM,MAAM,uBAAuB,GAAG;IACpC,GAAG,EAAE,MAAM,CAAA;CACZ,CAAA;AAED,MAAM,MAAM,eAAe,GAAG,eAAe,GAAG,gBAAgB,GAAG,eAAe,GAAG,aAAa,CAAA;AAElG,MAAM,MAAM,qBAAqB,GAAG;IAClC,IAAI,CAAC,EAAE,MAAM,GAAG,KAAK,CAAC,aAAa,GAAG,MAAM,CAAC,CAAA;IAC7C,IAAI,CAAC,EAAE,QAAQ,GAAG,MAAM,CAAA;IACxB,MAAM,CAAC,EAAE,iBAAiB,GAAG,mBAAmB,CAAA;IAChD,mBAAmB,CAAC,EAAE,OAAO,CAAA;IAC7B,eAAe,CAAC,EAAE,eAAe,CAAA;CAClC,GAAG,IAAI,CAAC,aAAa,EAAE,mBAAmB,CAAC,CAAA;AAE5C,wBAAsB,aAAa,CACjC,MAAM,CAAC,EAAE,IAAI,CAAC,qBAAqB,EAAE,mBAAmB,GAAG,iBAAiB,CAAC,GAC5E,OAAO,CAAC,uBAAuB,GAAG,IAAI,CAAC,CAYzC;AAED,wBAAgB,UAAU,CAAC,IAAI,CAAC,EAAE,qBAAqB,GAAG,OAAO,CAAC,sBAAsB,CAAC,CAMxF;AAED,wBAAgB,IAAI,CAAC,IAAI,CAAC,EAAE,qBAAqB,GAAG,OAAO,CAAC,sBAAsB,EAAE,CAAC,CAgBpF;AA+CD,wBAAgB,mBAAmB,CAAC,IAAI,EAAE,KAAK,CAAC,MAAM,CAAC,GAAG,OAAO,CAAC,IAAI,CAAC,CAWtE;AAKD,MAAM,MAAM,sBAAsB,GAAG,KAAK,GAAG;IAAE,IAAI,CAAC,EAAE,MAAM,CAAA;CAAE,CAAA;AAE9D,wBAAgB,QAAQ,CAAC,GAAG,EAAE,OAAO,GAAG,OAAO,CAE9C;AAED,wBAAgB,YAAY,CAAC,GAAG,EAAE,OAAO,GAAG,OAAO,CAElD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAUD,wBASC"}
+\ No newline at end of file
+diff --git a/node_modules/react-native-document-picker/react-native-document-picker.podspec b/node_modules/react-native-document-picker/react-native-document-picker.podspec
+index 3d53e0f..06f339e 100644
+--- a/node_modules/react-native-document-picker/react-native-document-picker.podspec
++++ b/node_modules/react-native-document-picker/react-native-document-picker.podspec
+@@ -11,9 +11,15 @@ Pod::Spec.new do |s|
+   s.authors      = package["author"]
+ 
+   s.platforms    = { :ios => "11.0" }
+-  s.source       = { :git => "https://github.com/rnmods/react-native-document-picker.git", :tag => "#{s.version}" }
++  s.source       = { :git => "https://github.com/rnmods/react-native-document-picker.git", :tag => "v#{s.version}" }
+ 
+   s.source_files = "ios/**/*.{h,m,mm}"
+ 
+-  s.dependency "React-Core"
++  s.frameworks = 'MobileCoreServices'
++  
++  if defined? install_modules_dependencies
++    install_modules_dependencies(s)
++  else
++    s.dependency 'React-Core'
++  end
+ end
+diff --git a/node_modules/react-native-document-picker/src/NativeDocumentPicker.ts b/node_modules/react-native-document-picker/src/NativeDocumentPicker.ts
+new file mode 100644
+index 0000000..39434c8
+--- /dev/null
++++ b/node_modules/react-native-document-picker/src/NativeDocumentPicker.ts
+@@ -0,0 +1,27 @@
++import type { TurboModule } from 'react-native'
++import { TurboModuleRegistry } from 'react-native'
++
++export type DocumentPickerResponse = {
++  uri: string
++  name: string
++  copyError?: string
++  fileCopyUri: string | null
++  type: string | null
++  size: number | null
++}
++
++export type DirectoryPickerResponse = {
++  uri: string
++}
++
++export interface Spec extends TurboModule {
++  readonly getConstants: () => {}
++
++  // we use "Object" to still have backwards compability with already
++  // present methods on iOS, which use NSDictionary
++  pick(options: Object): Promise<DocumentPickerResponse[]>
++  releaseSecureAccess(uris: string[]): Promise<void>
++  pickDirectory(): Promise<DirectoryPickerResponse>
++}
++
++export const NativeDocumentPicker = TurboModuleRegistry.getEnforcing<Spec>('RNDocumentPicker')
+diff --git a/node_modules/react-native-document-picker/src/fileTypes.ts b/node_modules/react-native-document-picker/src/fileTypes.ts
+index c0e0604..c99b495 100644
+--- a/node_modules/react-native-document-picker/src/fileTypes.ts
++++ b/node_modules/react-native-document-picker/src/fileTypes.ts
+@@ -5,6 +5,7 @@ const mimeTypes = Object.freeze({
+   doc: 'application/msword',
+   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+   images: 'image/*',
++  json: 'application/json',
+   pdf: 'application/pdf',
+   plainText: 'text/plain',
+   ppt: 'application/vnd.ms-powerpoint',
+@@ -22,6 +23,7 @@ const utis = Object.freeze({
+   doc: 'com.microsoft.word.doc',
+   docx: 'org.openxmlformats.wordprocessingml.document',
+   images: 'public.image',
++  json: 'public.json',
+   pdf: 'com.adobe.pdf',
+   plainText: 'public.plain-text',
+   ppt: 'com.microsoft.powerpoint.ppt',
+@@ -40,6 +42,7 @@ const extensions = Object.freeze({
+   doc: '.doc',
+   docx: '.docx',
+   images: '.jpeg .jpg .png',
++  json: '.json',
+   pdf: '.pdf',
+   plainText: '.txt',
+   ppt: '.ppt',
+@@ -50,12 +53,7 @@ const extensions = Object.freeze({
+   zip: '.zip .gz',
+ } as const)
+ 
+-export type PlatformTypes = {
+-  android: typeof mimeTypes
+-  ios: typeof utis
+-  windows: typeof extensions
+-}
+-export type SupportedPlatforms = 'ios' | 'android' | 'windows'
++export type PlatformTypes = typeof mimeTypes | typeof utis | typeof extensions
+ 
+ export const perPlatformTypes = {
+   android: mimeTypes,
+diff --git a/node_modules/react-native-document-picker/src/index.tsx b/node_modules/react-native-document-picker/src/index.tsx
+index 5b1ed02..c05182a 100644
+--- a/node_modules/react-native-document-picker/src/index.tsx
++++ b/node_modules/react-native-document-picker/src/index.tsx
+@@ -1,11 +1,12 @@
+-import { Platform, NativeModules, ModalPropsIOS } from 'react-native'
++import { Platform, ModalPropsIOS } from 'react-native'
+ import invariant from 'invariant'
+-import type { PlatformTypes, SupportedPlatforms } from './fileTypes'
++import type { PlatformTypes } from './fileTypes'
+ import { perPlatformTypes } from './fileTypes'
++import { NativeDocumentPicker } from './NativeDocumentPicker'
+ 
+ export type DocumentPickerResponse = {
+   uri: string
+-  name: string
++  name: string | null
+   copyError?: string
+   fileCopyUri: string | null
+   type: string | null
+@@ -18,45 +19,33 @@ export type DirectoryPickerResponse = {
+   uri: string
+ }
+ 
+-type DocumentPickerType = {
+-  pick(options: Record<string, any>): Promise<DocumentPickerResponse[]>
+-  releaseSecureAccess(uris: string[]): Promise<void>
+-  pickDirectory(): Promise<DirectoryPickerResponse>
+-}
+-
+-const RNDocumentPicker: DocumentPickerType = NativeModules.RNDocumentPicker
++export type TransitionStyle = 'coverVertical' | 'flipHorizontal' | 'crossDissolve' | 'partialCurl'
+ 
+-export type DocumentPickerOptions<OS extends SupportedPlatforms> = {
+-  type?:
+-    | string
+-    | PlatformTypes[OS][keyof PlatformTypes[OS]]
+-    | Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>
++export type DocumentPickerOptions = {
++  type?: string | Array<PlatformTypes | string>
+   mode?: 'import' | 'open'
+   copyTo?: 'cachesDirectory' | 'documentDirectory'
+   allowMultiSelection?: boolean
++  transitionStyle?: TransitionStyle
+ } & Pick<ModalPropsIOS, 'presentationStyle'>
+ 
+-export function pickDirectory(): Promise<DirectoryPickerResponse | null> {
+-  if (Platform.OS === 'android' || Platform.OS === 'windows') {
+-    return RNDocumentPicker.pickDirectory()
++export async function pickDirectory(
++  params?: Pick<DocumentPickerOptions, 'presentationStyle' | 'transitionStyle'>,
++): Promise<DirectoryPickerResponse | null> {
++  if (Platform.OS === 'ios') {
++    const result = await pick({
++      ...params,
++      mode: 'open',
++      allowMultiSelection: false,
++      type: ['public.folder'],
++    })
++    return { uri: result[0].uri }
+   } else {
+-    // TODO iOS impl
+-    return Promise.resolve(null)
++    return NativeDocumentPicker.pickDirectory()
+   }
+ }
+ 
+-export function pickMultiple<OS extends SupportedPlatforms>(
+-  opts?: DocumentPickerOptions<OS>,
+-): Promise<DocumentPickerResponse[]> {
+-  const options = {
+-    ...opts,
+-    allowMultiSelection: true,
+-  }
+-  return pick(options)
+-}
+-export function pickSingle<OS extends SupportedPlatforms>(
+-  opts?: DocumentPickerOptions<OS>,
+-): Promise<DocumentPickerResponse> {
++export function pickSingle(opts?: DocumentPickerOptions): Promise<DocumentPickerResponse> {
+   const options = {
+     ...opts,
+     allowMultiSelection: false,
+@@ -64,9 +53,7 @@ export function pickSingle<OS extends SupportedPlatforms>(
+   return pick(options).then((results) => results[0])
+ }
+ 
+-export function pick<OS extends SupportedPlatforms>(
+-  opts?: DocumentPickerOptions<OS>,
+-): Promise<DocumentPickerResponse[]> {
++export function pick(opts?: DocumentPickerOptions): Promise<DocumentPickerResponse[]> {
+   const options = {
+     // must be false to maintain old (v5) behavior
+     allowMultiSelection: false,
+@@ -74,8 +61,9 @@ export function pick<OS extends SupportedPlatforms>(
+     ...opts,
+   }
+ 
+-  const newOpts: DoPickParams<OS> = {
++  const newOpts: DoPickParams = {
+     presentationStyle: 'formSheet',
++    transitionStyle: 'coverVertical',
+     ...options,
+     type: Array.isArray(options.type) ? options.type : [options.type],
+   }
+@@ -83,15 +71,14 @@ export function pick<OS extends SupportedPlatforms>(
+   return doPick(newOpts)
+ }
+ 
+-type DoPickParams<OS extends SupportedPlatforms> = DocumentPickerOptions<OS> & {
+-  type: Array<PlatformTypes[OS][keyof PlatformTypes[OS]] | string>
++type DoPickParams = DocumentPickerOptions & {
++  type: Array<PlatformTypes | string>
+   allowMultiSelection: boolean
+   presentationStyle: NonNullable<ModalPropsIOS['presentationStyle']>
++  transitionStyle: TransitionStyle
+ }
+ 
+-function doPick<OS extends SupportedPlatforms>(
+-  options: DoPickParams<OS>,
+-): Promise<DocumentPickerResponse[]> {
++function doPick(options: DoPickParams): Promise<DocumentPickerResponse[]> {
+   invariant(
+     !('filetype' in options),
+     'A `filetype` option was passed to DocumentPicker.pick, the correct option is `type`',
+@@ -111,7 +98,6 @@ function doPick<OS extends SupportedPlatforms>(
+   )
+ 
+   invariant(
+-    // @ts-ignore TS2345: Argument of type 'string' is not assignable to parameter of type 'PlatformTypes[OS][keyof PlatformTypes[OS]]'.
+     !options.type.includes('folder'),
+     'RN document picker: "folder" option was removed, use "pickDirectory()"',
+   )
+@@ -127,7 +113,7 @@ function doPick<OS extends SupportedPlatforms>(
+     throw new TypeError('Invalid copyTo option: ' + options.copyTo)
+   }
+ 
+-  return RNDocumentPicker.pick(options)
++  return NativeDocumentPicker.pick(options)
+ }
+ 
+ export function releaseSecureAccess(uris: Array<string>): Promise<void> {
+@@ -140,7 +126,7 @@ export function releaseSecureAccess(uris: Array<string>): Promise<void> {
+     `"uris" should be an array of strings, was ${uris}`,
+   )
+ 
+-  return RNDocumentPicker.releaseSecureAccess(uris)
++  return NativeDocumentPicker.releaseSecureAccess(uris)
+ }
+ 
+ const E_DOCUMENT_PICKER_CANCELED = 'DOCUMENT_PICKER_CANCELED'
+@@ -157,7 +143,7 @@ export function isInProgress(err: unknown): boolean {
+ }
+ 
+ function isErrorWithCode(err: unknown, errorCode: string): boolean {
+-  if (err instanceof Error && 'code' in err) {
++  if (err && typeof err === 'object' && 'code' in err) {
+     const nativeModuleErrorInstance = err as NativeModuleErrorShape
+     return nativeModuleErrorInstance?.code === errorCode
+   }
+@@ -166,10 +152,10 @@ function isErrorWithCode(err: unknown, errorCode: string): boolean {
+ 
+ export default {
+   isCancel,
++  isInProgress,
+   releaseSecureAccess,
+   pickDirectory,
+   pick,
+-  pickMultiple,
+   pickSingle,
+   types,
+   perPlatformTypes,
+diff --git a/node_modules/react-native-document-picker/windows/ReactNativeDocumentPicker/RCTDocumentPickerModule.cs b/node_modules/react-native-document-picker/windows/ReactNativeDocumentPicker/RCTDocumentPickerModule.cs
+index 4c5d71a..789ca78 100644
+--- a/node_modules/react-native-document-picker/windows/ReactNativeDocumentPicker/RCTDocumentPickerModule.cs
++++ b/node_modules/react-native-document-picker/windows/ReactNativeDocumentPicker/RCTDocumentPickerModule.cs
+@@ -130,6 +130,9 @@ namespace RNDocumentPicker
+                 };
+ 
+           tcs.SetResult(obj);
++          // TODO: Replace with a more principled solution
++          Windows.Storage.AccessCache.StorageApplicationPermissions.
++                            FutureAccessList.AddOrReplace("pickedFolderToken", folder);
+         }
+         else
+         {
+@@ -212,7 +215,7 @@ namespace RNDocumentPicker
+         }
+         else
+         {
+-           tcs.SetResult(new List<JSValueObject>());
++          tcs.SetResult(new List<JSValueObject>());
+         }
+       });
+ 

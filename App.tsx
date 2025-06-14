@@ -1,131 +1,102 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import 'react-native-gesture-handler';
+import 'react-native-reanimated';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+// Screens
+import Splash from './src/components/screens/Splash';
+import Quiz from './src/components/screens/quiz';
+import Result from './src/components/screens/Results';
+import Products from './src/components/screens/Products'; // Optional additional screen
+import ProductsItems from './src/components/screens/ProductItems'; 
+import selection from './src/components/screens/selection';
+import Dropdown from './src/components/Dropdown/Dropdown';
+import React_reanimated from './src/components/screens/React_reanimated';
+import React_reanimated2 from './src/components/screens/React_reanimated2';
+import FoodApp from './src/components/screens/FoodApp';
+import SearchBar from './src/components/screens/SearchBar';
+import CheckInternet from"./src/components/screens/CheckInternet";
+import Upload from './src/components/screens/Upload';
+import add from './src/components/screens/Add';
+import show from './src/components/screens/Show';
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+// Bottom Tab Navigator for MainApp
+const MainApp = () => (
+  <Tab.Navigator
+    screenOptions={{
+      tabBarLabelPosition: 'below-icon',
+      tabBarShowLabel: true,
+      tabBarActiveTintColor: 'purple',
+      tabBarInactiveTintColor: 'grey',
+    }}
+  >
+    <Tab.Screen
+      name="Quiz"
+      component={Quiz}
+      options={{
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="home" size={size} color={color} />
+        ),
+      }}
+    />
+       <Tab.Screen
+      name="Products"
+      component={Products}
+      options={{
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="menu" size={size} color={color} />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="selection"
+      component={selection}
+      options={{
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="list" size={size} color={color} />
+        ),
+      }}
+    />
+        <Tab.Screen
+      name="Dropdown"
+      component={Dropdown}
+      options={{
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="chevron-down" size={size} color={color} />
+        ),
+      }}
+    />
+  </Tab.Navigator>
+);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
-  return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+// Main App
+const App = () => (
+  <NavigationContainer>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Splash" component={Splash} />
+      <Stack.Screen name="MainApp" component={MainApp} />
+      <Stack.Screen name="Result" component={Result} />
+      <Stack.Screen name="React_reanimated" component={React_reanimated}/>
+      <Stack.Screen name="React_reanimated2" component={React_reanimated2}/>
+        <Stack.Screen name="SearchBar" component={SearchBar}/>
+         <Stack.Screen name="FoodApp" component={FoodApp}/>
+        <Stack.Screen name="CheckInternet" component={CheckInternet}/>
+         <Stack.Screen name="Upload" component={Upload}/>
+          <Stack.Screen name="Add" component={add}/>
+           <Stack.Screen name="Show" component={show}/>
+    </Stack.Navigator>
+  </NavigationContainer>
+);
 
 export default App;
