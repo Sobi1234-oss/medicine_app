@@ -7,15 +7,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import 'react-native-reanimated';
 
 import 'react-native-gesture-handler';
-import Splash from './src/components/screens/Splash';
+import Splash from './src/screens/splash/Splash';
 
-import Home from './src/components/screens/Home';
-import Vaccines from './src/components/screens/Vaccines';
-import VaccineTypes from './src/components/screens/VaccineTypes';
-import profile from './src/components/screens/profile';
-import Details from './src/components/screens/Details';
-import VaccinationCenterDetails from './src/components/screens/VaccinationCenterDetails';
-import VaccinationSchedule from './src/components/screens/VaccinationSchedule';
+import Home from './src/screens/Home';
+import Vaccines from './src/screens/Vaccines';
+import VaccineTypes from './src/screens/VaccineTypes';
+import profile from './src/screens/profile';
+import Details from './src/screens/Details';
+import VaccinationCenterDetails from './src/screens/VaccinationCenterDetails';
+import VaccinationSchedule from './src/screens/VaccinationSchedule';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
