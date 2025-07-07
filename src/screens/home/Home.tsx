@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, Image, TouchableOpacity,
-  Dimensions, ScrollView, ActivityIndicator, SafeAreaView, FlatList
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView, FlatList
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts, fetchCategories, updateProduct } from '../../apis/api';
@@ -12,6 +11,9 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import UpdateProductModal from '../../components/UpdateModals/UpdateProducts';
 import ProductList from '../../components/swipelists/ProductsList'; //Custom reusable component
 import { DrawerActions } from '@react-navigation/native';
+
+import { useUser } from '../UserContext/UserContext'; // Update path as needed
+
 export interface ProductType {
   id: number;
   name: string;
@@ -24,10 +26,10 @@ export interface CategoryType {
   name: string;
 }
 
-const Home = ({ navigation }: { navigation : any }) => {
+const Home = ({ navigation }: { navigation: any }) => {
   const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-
+  const { user } = useUser(); // Get user from context
   const { data: products = [], isLoading, error, refetch } = useQuery<ProductType[]>({
     queryKey: ['products'],
     queryFn: fetchProducts,
@@ -93,20 +95,33 @@ const Home = ({ navigation }: { navigation : any }) => {
       </View>
     );
   }
-     const openDrawer = () => {
+  const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
-
+  const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours();
+  
+  if (hour < 12) return 'Start your day with';
+  if (hour < 15) return 'Enjoy your lunch with';
+  if (hour < 18) return 'Afternoon cravings for';
+  if (hour < 22) return 'Delicious dinner with';
+  return 'Late night hunger? Try';
+};
   return (
     <SafeAreaView style={styles.container}>
- <HomeHeader navigation={navigation} onProfilePress={openDrawer} />
+      <HomeHeader navigation={navigation} onProfilePress={openDrawer} />
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hello Soban</Text>
-          <Text style={styles.subtitle}>Order your favorite food</Text>
+          <Text style={styles.greeting}>
+            {user?.name ? `Hi ${user.name.split(' ')[0]} !` : 'Welcome!'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {getTimeBasedGreeting()} your favorite food
+          </Text>
+          
         </View>
-
+  
         <Text style={styles.sectionTitle}>Categories</Text>
         <FlatList
           horizontal
@@ -155,15 +170,15 @@ const styles = StyleSheet.create({
   // ... (same styles as before)
   container: { flex: 1, backgroundColor: '#e6e6fa' },
   content: { padding: 16, paddingBottom: 30 },
-  header: { marginBottom: 20 },
+  header: { marginBottom: 20 ,backgroundColor:'#f8f8ff',paddingLeft:6,width:'100%'},
   greeting: {
-    fontSize: 24, fontWeight: 'bold', color: '#000080', fontFamily: 'Quicksand-Medium',
+    fontSize: 24, fontWeight: '600', color: '#000080', fontFamily: 'Quicksand-Bold',marginBottom:5
   },
   subtitle: {
     fontSize: 16, color: 'black', fontFamily: 'Quicksand-Medium', marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 15,
+    fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 15, fontFamily: 'Quicksand-Bold'
   },
   categoryItem: {
     backgroundColor: '#dc143c',
@@ -175,8 +190,8 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: 'white',
-    fontWeight: 'bold',
-    fontFamily: 'Quicksand-Medium',
+    fontWeight: '600',
+    fontFamily: 'Quicksand-Bold',
   },
   categories: {
     paddingBottom: 15,

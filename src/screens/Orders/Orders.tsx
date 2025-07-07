@@ -112,11 +112,11 @@ const OrdersScreen = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={filteredOrders}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.list}
-        />
+  data={filteredOrders}
+  renderItem={renderItem}
+  keyExtractor={(item) => item.id.toString()}
+  contentContainerStyle={[styles.list, { paddingBottom: 80 }]} // 👈 Add bottom padding here
+/>
       )}
     </View>
   );

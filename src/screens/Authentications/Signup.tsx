@@ -75,7 +75,7 @@ const SignUp = ({ navigation }: { navigation: any }) => {
       
       setTimeout(() => {
         setShowModal(false);
-        navigation.replace('TabNavigation');
+          navigation.replace('Login');
       }, 2000);
     },
     onError: (error: any) => {

@@ -8,7 +8,7 @@ import Home from '../../screens/home/Home';
 import Products from '../../screens/products/Products';
 import Dropdown from '../Dropdown/Dropdown';
 import Main from '../../screens/Add products/main';
-import CartScreen from '../../screens/CartScreen';
+import CartScreen from '../../screens/CartScreens/CartScreen';
 import OrdersScreen from '../../screens/Orders/Orders';
 import { useUser } from '../../screens/UserContext/UserContext';
 const Tab = createBottomTabNavigator();

@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // IP address for Android emulator to access Laravel backend
-const BASE_URL = 'http://192.168.18.21:8000/api'; // Must match backend
+const BASE_URL = 'http://192.168.43.126:8000/api'; // Must match backend
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -118,7 +118,7 @@ export const createOrder = async (orderData) => {
     const response = await axiosInstance.post('/orders', orderData);
     return response.data;
   } catch (error) {
-    console.error('Error creating order:', error.response?.data || error.message);
+    console.error('Order creation error:', error.response?.data);
     throw {
       message: error.response?.data?.message || 'Order creation failed',
       errors: error.response?.data?.errors,
@@ -145,12 +145,47 @@ export const loginUser = async (credentials) => {
   }
 };
 export const fetchOrders = async () => {
+  const response = await axiosInstance.get('/orders');
+  return response.data.data; // only return the array
+};
+// Store FCM Token
+export const storeFCMToken = async (userId, token) => {
   try {
-    const response = await axiosInstance.get('/orders'); // uses your index()
+    const response = await axiosInstance.post('/store-fcm-token', {
+      user_id: userId,
+      fcm_token: token
+    });
     return response.data;
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error('Error storing FCM token:', error.response?.data || error.message);
     throw error;
   }
-}
+};
+
+// Send Order Notification
+export const sendOrderNotification = async (orderId, adminId) => {
+  try {
+    const response = await axiosInstance.post('/send-notification', {
+      title: 'New Order Received',
+      message: `New order #${orderId} has been placed`,
+      order_id: orderId,
+      user_id: adminId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending notification:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Get Admin ID (you might need this to know who to notify)
+export const getAdminId = async () => {
+  try {
+    const response = await axiosInstance.get('/admin-id');
+    return response.data.admin_id;
+  } catch (error) {
+    console.error('Error getting admin ID:', error.response?.data || error.message);
+    throw error;
+  }
+};
 export default axiosInstance;

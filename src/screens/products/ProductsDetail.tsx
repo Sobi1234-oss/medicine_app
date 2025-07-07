@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,19 @@ import {
   TouchableOpacity,
   Dimensions,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LinearGradient from 'react-native-linear-gradient';
 import { useCartStore } from '../../components/store/useCartStore';
-import TabNavigation from '../../components/navigations/TabNavigation';
+import CartMessage from '../../components/MesageModals/CartMessage';
+
 const { width } = Dimensions.get('window');
 
 // Navigation types
 type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: { screen: string };
   ProductsDetail: {
     product: {
       id: number;
@@ -33,13 +33,6 @@ type RootStackParamList = {
   };
 };
 
-type TabParamList = {
-  Home: undefined;
-  Products: undefined;
-  Cart: undefined;
-  Profile: undefined;
-};
-
 type RouteProps = RouteProp<RootStackParamList, 'ProductsDetail'>;
 type NavigationProps = NativeStackNavigationProp<RootStackParamList, 'ProductsDetail'>;
 
@@ -47,35 +40,45 @@ const ProductsDetail = () => {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProps>();
   const { product } = route.params;
+
   const addToCart = useCartStore((state) => state.addToCart);
   const rating = product.rating ?? 4.5;
   const reviews = 128;
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id.toString(),
-      name: product.title,
-      price: product.price,
-      image: product.image_url,
-    });
+  // Modal states
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
 
-    Alert.alert(
-      'Added to Cart',
-      `${product.title} has been added to your cart`,
-      [
-        {
-          text: 'Continue Shopping',
-          style: 'cancel',
-        },
-        {
-          text: 'View Cart',
-          onPress: () => {
-            // Navigate to MainTabs and then to Cart tab
-            navigation.navigate('TabNavigation', { screen: 'Cart' });
-          },
-        },
-      ]
-    );
+const handleAddToCart = () => {
+  const cartItems = useCartStore.getState().items; 
+  const isAlreadyAdded = cartItems.some(item => item.id === product.id.toString());
+
+  if (isAlreadyAdded) {
+    setModalMessage(`${product?.title ?? 'Item'} is already in your cart`);
+    setModalType('error');
+    setModalVisible(true);
+    return;
+  }
+
+  addToCart({
+    id: product.id.toString(),
+    name: product.title,
+    price: product.price,
+    image: product.image_url,
+  });
+
+  setModalMessage(`${product?.title ?? 'Item'} has been added to your cart`);
+  setModalType('success');
+  setModalVisible(true);
+};
+  const handleContinueShopping = () => {
+    setModalVisible(false);
+  };
+
+  const handleViewCart = () => {
+    setModalVisible(false);
+    navigation.navigate('TabNavigation', { screen: 'Cart' });
   };
 
   return (
@@ -96,7 +99,6 @@ const ProductsDetail = () => {
 
       {/* Product Content */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Product Image */}
         <View style={styles.imageContainer}>
           <LinearGradient
             colors={['#f8f8f8', '#e0e0e0', '#d0d0d0']}
@@ -112,14 +114,12 @@ const ProductsDetail = () => {
           </LinearGradient>
         </View>
 
-        {/* Product Info */}
         <View style={styles.infoContainer}>
           <View style={styles.titlePriceRow}>
             <Text style={styles.productTitle}>{product.title}</Text>
-            <Text style={styles.productPrice}>${product.price}</Text>
+            <Text style={styles.productPrice}>Rs: {product.price}</Text>
           </View>
 
-          {/* Rating */}
           <View style={styles.ratingContainer}>
             <View style={styles.starContainer}>
               {[1, 2, 3, 4, 5].map((i) => (
@@ -136,7 +136,6 @@ const ProductsDetail = () => {
             </View>
           </View>
 
-          {/* Description */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Description</Text>
             <Text style={styles.descriptionText}>
@@ -145,7 +144,6 @@ const ProductsDetail = () => {
             </Text>
           </View>
 
-          {/* Features */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Key Features</Text>
             {[
@@ -162,11 +160,10 @@ const ProductsDetail = () => {
             ))}
           </View>
 
-          {/* Shipping Info */}
           <View style={styles.infoBox}>
             <View style={styles.infoRow}>
               <Ionicons name="time-outline" size={20} color="#666" />
-              <Text style={styles.infoText}>Delivery within 2-3 business days</Text>
+              <Text style={styles.infoText}>Delivery within 2–3 business days</Text>
             </View>
             <View style={styles.infoRow}>
               <Ionicons name="location-outline" size={20} color="#666" />
@@ -175,6 +172,15 @@ const ProductsDetail = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Message Modal */}
+      <CartMessage
+        visible={modalVisible}
+        type={modalType}
+        message={modalMessage}
+        onClose={handleContinueShopping}
+        onViewCart={handleViewCart}
+      />
 
       {/* Add to Cart Button */}
       <View style={styles.buttonContainer}>
@@ -188,10 +194,7 @@ const ProductsDetail = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
+  container: { flex: 1, backgroundColor: '#FFF' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -205,16 +208,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
-  iconButton: {
-    padding: 5,
-  },
-  scrollContainer: {
-    paddingBottom: 100,
-  },
-  imageContainer: {
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
+  iconButton: { padding: 5 },
+  scrollContainer: { paddingBottom: 100 },
+  imageContainer: { paddingHorizontal: 20, marginTop: 10 },
   gradientBackground: {
     width: '100%',
     height: width * 0.7,
@@ -223,82 +219,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 3,
   },
-  productImage: {
-    width: '80%',
-    height: '80%',
-  },
-  infoContainer: {
-    padding: 20,
-  },
+  productImage: { width: '80%', height: '80%' },
+  infoContainer: { padding: 20 },
   titlePriceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 15,
   },
-  productTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-    flex: 1,
-  },
-  productPrice: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FF6D42',
-  },
-  ratingContainer: {
-    marginBottom: 20,
-  },
-  starContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    marginLeft: 10,
-    fontSize: 15,
-    color: '#666',
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  descriptionText: {
-    fontSize: 15,
-    color: '#555',
-    lineHeight: 22,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  featureText: {
-    marginLeft: 10,
-    fontSize: 15,
-    color: '#444',
-  },
+  productTitle: { fontSize: 22, fontWeight: '600', color: '#333', flex: 1 },
+  productPrice: { fontSize: 24, fontWeight: '700', color: '#FF6D42' },
+  ratingContainer: { marginBottom: 20 },
+  starContainer: { flexDirection: 'row', alignItems: 'center' },
+  ratingText: { marginLeft: 10, fontSize: 15, color: '#666' },
+  section: { marginBottom: 25 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 12 },
+  descriptionText: { fontSize: 15, color: '#555', lineHeight: 22 },
+  featureItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  featureText: { marginLeft: 10, fontSize: 15, color: '#444' },
   infoBox: {
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
     padding: 15,
     marginTop: 10,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoText: {
-    marginLeft: 10,
-    fontSize: 14,
-    color: '#666',
-  },
+  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  infoText: { marginLeft: 10, fontSize: 14, color: '#666' },
   buttonContainer: {
     position: 'absolute',
     bottom: 0,
@@ -320,12 +266,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600', marginLeft: 8 },
 });
 
 export default ProductsDetail;

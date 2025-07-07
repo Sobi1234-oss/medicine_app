@@ -3,10 +3,23 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useUser } from '../../screens/UserContext/UserContext';
-
+import { useNavigation } from '@react-navigation/native';
 const ProfileDrawer = (props) => {
     const { user, logout } = useUser();
+      const navigation = useNavigation();
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            // Navigate to login screen after successful logout
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
     if (!user) {
         return (
             <DrawerContentScrollView {...props}>
@@ -71,10 +84,10 @@ const ProfileDrawer = (props) => {
             </DrawerContentScrollView>
 
             {/* 🎯 Fixed Footer with Logout */}
-            <View style={styles.footer}>
+           <View style={styles.footer}>
                 <DrawerItem
                     label="Logout"
-                    onPress={logout}
+                    onPress={handleLogout}  // Use the new handleLogout function
                     icon={({ color }) => <Ionicons name="log-out-outline" size={24} color={color} />}
                     labelStyle={[styles.menuLabel, styles.logoutLabel]}
                 />

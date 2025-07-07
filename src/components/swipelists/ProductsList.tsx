@@ -77,9 +77,9 @@ const ProductList: React.FC<ProductListProps> = ({ products, navigation, onOptio
                 {item.name}
               </Text>
               <View style={styles.priceContainer}>
-                <Text style={styles.price}>RS{item.price}</Text>
+                <Text style={styles.price}>RS: {item.price}</Text>
                 {item.originalPrice && (
-                  <Text style={styles.originalPrice}>RS{item.originalPrice}</Text>
+                  <Text style={styles.originalPrice}>RS: {item.originalPrice}</Text>
                 )}
               </View>
             </View>

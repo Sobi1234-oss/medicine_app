@@ -7,7 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import 'react-native-reanimated';
 
 import 'react-native-gesture-handler';
-import Splash from './src/screens/splash/Splash';
+import Splash from './src/screens/splash/Welcome';
 
 import Home from './src/screens/Home';
 import Vaccines from './src/screens/Vaccines';

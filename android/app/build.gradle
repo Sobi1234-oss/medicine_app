@@ -112,6 +112,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     implementation("com.google.firebase:firebase-analytics")
+   implementation project(':react-native-splash-screen')
     apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
       
     if (hermesEnabled.toBoolean()) {

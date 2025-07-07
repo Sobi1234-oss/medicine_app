@@ -1,10 +1,10 @@
 package com.medicine_app
-
+import android.os.Bundle;
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-
+import org.devio.rn.splashscreen.SplashScreen
 class MainActivity : ReactActivity() {
 
   /**
@@ -13,6 +13,10 @@ class MainActivity : ReactActivity() {
    */
   override fun getMainComponentName(): String = "Medicine_App"
 
+   override fun onCreate(savedInstanceState: Bundle?) {
+    SplashScreen.show(this) // ✅ Show splash screen before super.onCreate
+    super.onCreate(savedInstanceState) // ✅ Pass savedInstanceState here, not null
+  }
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]

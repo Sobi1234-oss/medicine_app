@@ -83,7 +83,7 @@ const LocationPicker = ({ visible, onClose, onLocationSelected, onError }) => {
         onError('Location error. Please enter manually.');
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy:true,
         timeout: 20000,
         maximumAge: 10000,
       }

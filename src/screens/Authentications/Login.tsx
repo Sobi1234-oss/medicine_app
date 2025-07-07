@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import { loginUser } from '../../apis/api';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useUser } from '../../screens/UserContext/UserContext'; // Import your user context
-
+import { AuthContext } from '../../screens/Authentications/AuthContext';
 const Login = ({ navigation }: { navigation: any }) => {
     const [form, setForm] = useState({
         email: '',
@@ -28,7 +28,9 @@ const Login = ({ navigation }: { navigation: any }) => {
     const [showModal, setShowModal] = useState(false);
     const [modalStatus, setModalStatus] = useState<'success' | 'error' | null>(null);
     const [modalMessage, setModalMessage] = useState('');
-     const { setUser } = useUser();
+    const { setUser } = useUser();
+    const { setUser: setAuthUser } = React.useContext(AuthContext);
+
     // Add this function to handle input changes
     const handleInputChange = (field: string, value: string) => {
         setForm({
@@ -47,7 +49,7 @@ const Login = ({ navigation }: { navigation: any }) => {
     const mutation = useMutation({
         mutationFn: loginUser,
         onSuccess: (data) => {
-            setUser({
+            const userData = {
                 id: data.user.id,
                 name: data.user.name,
                 email: data.user.email,
@@ -55,7 +57,10 @@ const Login = ({ navigation }: { navigation: any }) => {
                 gender: data.user.gender || 'Male',
                 avatar: data.user.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
                 role: data.user.role || 'user'
-            });
+            };
+
+            setUser(userData);       // sets UserContext
+            setAuthUser(userData);   // sets AuthContext ✅ triggers navigation
 
             setModalStatus('success');
             setModalMessage('Login successful!');
@@ -63,26 +68,26 @@ const Login = ({ navigation }: { navigation: any }) => {
             setForm({ email: '', password: '' });
             Keyboard.dismiss();
 
+            // No need for manual navigation!
             setTimeout(() => {
                 setShowModal(false);
-                navigation.replace('MainApp');
-            }, 2000);
+            }, 1000);
         },
         onError: (error) => {
-    console.error('Detailed login error:', {
-      message: error.message,
-      response: error.response?.data,
-      stack: error.stack,
+            console.error('Detailed login error:', {
+                message: error.message,
+                response: error.response?.data,
+                stack: error.stack,
+            });
+            const errorMessage = error?.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Login failed. Please try again.';
+            setModalStatus('error');
+            setModalMessage(errorMessage);
+            setShowModal(true);
+        },
     });
-    const errorMessage = error?.response?.data?.message || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        'Login failed. Please try again.';
-    setModalStatus('error');
-    setModalMessage(errorMessage);
-    setShowModal(true);
-  },
-});
 
     const handleSubmit = () => {
         // Reset errors
@@ -173,8 +178,8 @@ const Login = ({ navigation }: { navigation: any }) => {
                     )}
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                    onPress={() => navigation.navigate('SignUp')}
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('Signup')}
                     style={styles.signupLink}
                 >
                     <Text style={styles.footerText}>
